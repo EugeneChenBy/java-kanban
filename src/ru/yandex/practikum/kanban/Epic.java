@@ -1,3 +1,5 @@
+package ru.yandex.practikum.kanban;
+
 import java.util.HashSet;
 
 public class Epic extends Task {
@@ -17,12 +19,21 @@ public class Epic extends Task {
         subTasks = new HashSet<>();
     }
 
+    public Epic(String name, String description) {
+        super(name, description);
+        subTasks = new HashSet<>();
+    }
+
     public void addSubTaskToEpic(int subTaskId) {
         subTasks.add(subTaskId);
     }
 
     public void removeSubTaskFromEpic(int subTaskId) {
         subTasks.remove(subTaskId);
+    }
+
+    public void removeSubTasksFromEpic() {
+        subTasks.clear();
     }
 
     @Override

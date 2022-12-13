@@ -1,19 +1,19 @@
+package ru.yandex.practikum.kanban;
+
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class Manager {
-    int id;
+    private int id;
     private HashMap<Integer, Epic> epics;
     private HashMap<Integer, Task> tasks;
     private HashMap<Integer, SubTask> subTasks;
-    private StatusList statusList;
 
     public Manager() {
         this.id = 0;
         epics = new HashMap<>();
         tasks = new HashMap<>();
         subTasks = new HashMap<>();
-        statusList = new StatusList();
     }
 
     public HashMap<Integer, Epic> getEpics() {
@@ -28,7 +28,7 @@ public class Manager {
         return subTasks;
     }
 
-    public int getNewId() {
+    private int getNewId() {
         id++;
         return id;
     }
@@ -58,50 +58,51 @@ public class Manager {
             SubTask subTask = new SubTask(id, name, description, epicId);
             subTasks.put(id, subTask);
             epics.get(epicId).addSubTaskToEpic(id);
+            changeEpicStatus(epicId);
 
             return subTask;
         } else {
             System.out.println("Не удалось создать задачу. Не найден эпик!");
-            return new SubTask();
+            return null;
         }
     }
 
-    public int createEpic(Epic epic) {
-        if (epic.status != "NEW") {
+    public Epic addEpic(Epic epic) {
+        if (epic.status != StatusList.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
-            return 0;
+            return null;
         }
         epic.id = getNewId();
         epics.put(epic.id, epic);
 
-        return epic.id;
+        return epic;
     }
 
-    public int createTask(Task task) {
-        if (task.status != "NEW") {
+    public Task addTask(Task task) {
+        if (task.status != StatusList.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
-            return 0;
+            return null;
         }
         task.id = getNewId();
         tasks.put(task.id, task);
 
-        return task.id;
+        return task;
     }
 
-    public int createSubTask(Integer epicId, SubTask subTask) {
-        if (subTask.status != "NEW") {
+    public SubTask addSubTask(SubTask subTask) {
+        if (subTask.status != StatusList.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
-            return 0;
+            return null;
         }
         if (epics.containsKey(subTask.epicId)) {
             subTask.id = getNewId();
             subTasks.put(subTask.id, subTask);
             epics.get(subTask.epicId).addSubTaskToEpic(subTask.id);
 
-            return subTask.id;
+            return subTask;
         } else {
             System.out.println("Не удалось создать задачу. Не найден эпик!");
-            return 0;
+            return null;
         }
     }
 
@@ -119,7 +120,7 @@ public class Manager {
     }
 
     public void updateEpic(Epic epic) {
-        if (!statusList.checkStatus(epic.status)) {
+        if (!StatusList.checkStatus(epic.status)) {
             System.out.println("Статус '" + epic.status + "' для эпика установить невозможно!");
             return;
         }
@@ -134,7 +135,7 @@ public class Manager {
     }
 
     public void updateTask(Task task) {
-        if (!statusList.checkStatus(task.status)) {
+        if (!StatusList.checkStatus(task.status)) {
             System.out.println("Статус '" + task.status + "' для задачи установить невозможно!");
             return;
         }
@@ -147,7 +148,7 @@ public class Manager {
 
     // обновление подзадачи снаружу
     public void updateSubTask(SubTask subTask) {
-        if (!statusList.checkStatus(subTask.status)) {
+        if (!StatusList.checkStatus(subTask.status)) {
             System.out.println("Статус '" + subTask.status + "' для подзадачи установить невозможно!");
             return;
         }
@@ -165,33 +166,37 @@ public class Manager {
     }
 
     // изменение статуса родительского эпика при изменении статуса у подзадачи
-    public void changeEpicStatus(SubTask subTask) {
+    private void changeEpicStatus(SubTask subTask) {
         changeEpicStatus(subTask.epicId);
     }
 
     // изменение статуса родительского эпика при изменении статуса у подзадачи
-    public void changeEpicStatus(int idEpic) {
+    private void changeEpicStatus(int idEpic) {
         if (epics.containsKey(idEpic)) {
             String currentStatus = epics.get(idEpic).status;
             String finalStatus;
-            HashSet<String> statusSet = new HashSet<>();
 
-            for (Integer idSubTask : epics.get(idEpic).subTasks) {
-                statusSet.add(subTasks.get(idSubTask).status);
-            }
+            if (!epics.get(idEpic).subTasks.isEmpty()) {
+                HashSet<String> statusSet = new HashSet<>();
 
-            if (statusSet.contains("IN_PROGRESS")) {
-                finalStatus = "IN_PROGRESS";
-            } else if (statusSet.contains("DONE")) {
-                if (!statusSet.contains("NEW")) {
-                    finalStatus = "DONE";
+                for (Integer idSubTask : epics.get(idEpic).subTasks) {
+                    statusSet.add(subTasks.get(idSubTask).status);
+                }
+
+                if (statusSet.contains(StatusList.IN_PROGRESS)) {
+                    finalStatus = StatusList.IN_PROGRESS;
+                } else if (statusSet.contains(StatusList.DONE)) {
+                    if (!statusSet.contains(StatusList.NEW)) {
+                        finalStatus = StatusList.DONE;
+                    } else {
+                        finalStatus = StatusList.IN_PROGRESS;
+                    }
                 } else {
-                    finalStatus = "IN_PROGRESS";
+                    finalStatus = StatusList.NEW;
                 }
             } else {
-                finalStatus = "NEW";
+                finalStatus = StatusList.NEW;
             }
-
             if (!currentStatus.equals(finalStatus)) {
                 epics.get(idEpic).setStatus(finalStatus);
             }
@@ -201,8 +206,8 @@ public class Manager {
     }
 
     // получение всех сущностей Канбан-доски
-    public HashMap<Integer, Object> getAll() {
-        HashMap<Integer, Object> allTasks = new HashMap<Integer, Object>();
+    public HashMap<Integer, Task> getAll() {
+        HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
 
         for (Epic epic : epics.values()) {
             allTasks.put(epic.id, epic);
@@ -231,7 +236,8 @@ public class Manager {
         subTasks.clear();
         // ставим всем эпикам статус NEW и чистим связаанные сабтаски
         for (Epic epic : epics.values()) {
-            epic.setStatus("NEW");
+            epic.removeSubTasksFromEpic();
+            epic.setStatus(StatusList.NEW);
         }
     }
 
@@ -252,21 +258,20 @@ public class Manager {
 
     // получение любой сущности Канбан-доски по id
     public Object getAnyTask(int id) {
-        Object object = new Object();
-        HashMap<Integer, Object> objects = getAll();
+        HashMap<Integer, Task> tasks = getAll();
 
-        if (objects.containsKey(id)) {
-            object = objects.get(id);
+        if (tasks.containsKey(id)) {
+            return tasks.get(id);
+        } else {
+            return null;
         }
-
-        return object;
     }
 
     public Epic getEpic(int id) {
         if (epics.containsKey(id)) {
             return epics.get(id);
         } else {
-            return new Epic();
+            return null;
         }
     }
 
@@ -274,7 +279,7 @@ public class Manager {
         if (tasks.containsKey(id)) {
             return tasks.get(id);
         } else {
-            return new Task();
+            return null;
         }
     }
 
@@ -282,7 +287,7 @@ public class Manager {
         if (subTasks.containsKey(id)) {
             return subTasks.get(id);
         } else {
-            return new SubTask();
+            return null;
         }
     }
 
@@ -340,15 +345,19 @@ public class Manager {
     }
 
     public HashMap<Integer, SubTask> getSubTasksOfEpic(int epicId) {
-        HashMap<Integer, SubTask> epicSubTasks = new HashMap<>();
+        if (epics.containsKey(epicId)) {
+            HashMap<Integer, SubTask> epicSubTasks = new HashMap<>();
 
-        for (Integer idSubTask : epics.get(epicId).subTasks) {
-            if (subTasks.containsKey(idSubTask)) {
-                epicSubTasks.put(idSubTask, subTasks.get(idSubTask));
+            for (Integer idSubTask : epics.get(epicId).subTasks) {
+                if (subTasks.containsKey(idSubTask)) {
+                    epicSubTasks.put(idSubTask, subTasks.get(idSubTask));
+                }
             }
-        }
 
-        return epicSubTasks;
+            return epicSubTasks;
+        } else {
+            return null;
+        }
     }
 
     @Override
