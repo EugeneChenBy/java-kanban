@@ -1,7 +1,7 @@
 package ru.yandex.practikum.kanban;
 
 public class SubTask extends Task {
-    int epicId;
+    private int epicId;
 
     public SubTask() {
         super();
@@ -23,13 +23,21 @@ public class SubTask extends Task {
         this.epicId = epicId;
     }
 
+    public int getEpicId() {
+        return epicId;
+    }
+
+    public void setEpicId(int epicId) {
+        this.epicId = epicId;
+    }
+
     @Override
     public String toString() {
         return "SubTask{" +
-                "id=" + id +
-                ", name='" + name +
-                "', description='" + description +
-                "', status='" + status +
+                "id=" + this.getId() +
+                ", name='" + this.getName() +
+                "', description='" + this.getDescription() +
+                "', status='" + this.getStatus() +
                 "', epicId = " + epicId +
                 "'}";
     }

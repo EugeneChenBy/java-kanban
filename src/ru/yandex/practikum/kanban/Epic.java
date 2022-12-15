@@ -3,7 +3,7 @@ package ru.yandex.practikum.kanban;
 import java.util.HashSet;
 
 public class Epic extends Task {
-    HashSet<Integer> subTasks;
+    private HashSet<Integer> subTasks;
 
     public Epic() {
         super();
@@ -24,6 +24,14 @@ public class Epic extends Task {
         subTasks = new HashSet<>();
     }
 
+    public HashSet<Integer> getSubTasks() {
+        return subTasks;
+    }
+
+    public void setSubTasks(HashSet<Integer> subTasks) {
+        this.subTasks = subTasks;
+    }
+
     public void addSubTaskToEpic(int subTaskId) {
         subTasks.add(subTaskId);
     }
@@ -39,10 +47,10 @@ public class Epic extends Task {
     @Override
     public String toString() {
         return "Epic{" +
-                "id=" + id +
-                ", name='" + name +
-                "', description='" + description +
-                "', status='" + status +
+                "id=" + this.getId() +
+                ", name='" + this.getName() +
+                "', description='" + this.getDescription() +
+                "', status='" + this.getStatus() +
                 "', subTasks = " + subTasks.toString() +
                 "}";
     }

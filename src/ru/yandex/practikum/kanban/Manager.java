@@ -33,71 +33,38 @@ public class Manager {
         return id;
     }
 
-    // создание эпика
-    public Epic createEpic(String name, String description) {
-        int id = getNewId();
-        Epic epic = new Epic(id, name, description);
-        epics.put(id, epic);
-
-        return epic;
-    }
-
-    // создание задачи вне эпика
-    public Task createTask(String name, String description) {
-        int id = getNewId();
-        Task task = new Task(id, name, description);
-        tasks.put(id, task);
-
-        return task;
-    }
-
-    // создание подзадачи внутри эпипка
-    public SubTask createSubTask(String name, String description, int epicId) {
-        if (epics.containsKey(epicId)) {
-            int id = getNewId();
-            SubTask subTask = new SubTask(id, name, description, epicId);
-            subTasks.put(id, subTask);
-            epics.get(epicId).addSubTaskToEpic(id);
-            changeEpicStatus(epicId);
-
-            return subTask;
-        } else {
-            System.out.println("Не удалось создать задачу. Не найден эпик!");
-            return null;
-        }
-    }
-
     public Epic addEpic(Epic epic) {
-        if (epic.status != StatusList.NEW) {
+        if (epic.getStatus() != StatusList.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
             return null;
         }
-        epic.id = getNewId();
-        epics.put(epic.id, epic);
+        epic.setId(getNewId());
+        epics.put(epic.getId(), epic);
 
         return epic;
     }
 
     public Task addTask(Task task) {
-        if (task.status != StatusList.NEW) {
+        if (task.getStatus() != StatusList.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
             return null;
         }
-        task.id = getNewId();
-        tasks.put(task.id, task);
+        task.setId(getNewId());
+        tasks.put(task.getId(), task);
 
         return task;
     }
 
     public SubTask addSubTask(SubTask subTask) {
-        if (subTask.status != StatusList.NEW) {
+        if (subTask.getStatus() != StatusList.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
             return null;
         }
-        if (epics.containsKey(subTask.epicId)) {
-            subTask.id = getNewId();
-            subTasks.put(subTask.id, subTask);
-            epics.get(subTask.epicId).addSubTaskToEpic(subTask.id);
+        if (epics.containsKey(subTask.getEpicId())) {
+            subTask.setId(getNewId());
+            subTasks.put(subTask.getId(), subTask);
+            epics.get(subTask.getEpicId()).addSubTaskToEpic(subTask.getId());
+            changeEpicStatus(subTask.getEpicId());
 
             return subTask;
         } else {
@@ -120,27 +87,27 @@ public class Manager {
     }
 
     public void updateEpic(Epic epic) {
-        if (!StatusList.checkStatus(epic.status)) {
-            System.out.println("Статус '" + epic.status + "' для эпика установить невозможно!");
+        if (!StatusList.checkStatus(epic.getStatus())) {
+            System.out.println("Статус '" + epic.getStatus() + "' для эпика установить невозможно!");
             return;
         }
-        if (epics.containsKey(epic.id)) {
+        if (epics.containsKey(epic.getId())) {
             // перепривязываем старые подтаски к новому пришедшему снаружи эпику
-            epic.subTasks = epics.get(epic.id).subTasks;
-            epics.put(epic.id, epic);
-            changeEpicStatus(epic.id);
+            epic.setSubTasks(epics.get(epic.getId()).getSubTasks());
+            epics.put(epic.getId(), epic);
+            changeEpicStatus(epic.getId());
         } else {
             System.out.println("Не удалось обновить эпик. На Канбан-доске такой эпик не найден!");
         }
     }
 
     public void updateTask(Task task) {
-        if (!StatusList.checkStatus(task.status)) {
-            System.out.println("Статус '" + task.status + "' для задачи установить невозможно!");
+        if (!StatusList.checkStatus(task.getStatus())) {
+            System.out.println("Статус '" + task.getStatus() + "' для задачи установить невозможно!");
             return;
         }
-        if (tasks.containsKey(task.id)) {
-            tasks.put(task.id, task);
+        if (tasks.containsKey(task.getId())) {
+            tasks.put(task.getId(), task);
         } else {
             System.out.println("Не удалось обновить задачу. На Канбан-доске такая задача не найдена!");
         }
@@ -148,15 +115,15 @@ public class Manager {
 
     // обновление подзадачи снаружу
     public void updateSubTask(SubTask subTask) {
-        if (!StatusList.checkStatus(subTask.status)) {
-            System.out.println("Статус '" + subTask.status + "' для подзадачи установить невозможно!");
+        if (!StatusList.checkStatus(subTask.getStatus())) {
+            System.out.println("Статус '" + subTask.getStatus() + "' для подзадачи установить невозможно!");
             return;
         }
-        if (subTasks.containsKey(subTask.id)) {
-            if (epics.containsKey(subTask.epicId)) {
-                subTasks.put(subTask.id, subTask);
-                epics.get(subTask.epicId).addSubTaskToEpic(subTask.id);
-                changeEpicStatus(subTask.epicId);
+        if (subTasks.containsKey(subTask.getId())) {
+            if (epics.containsKey(subTask.getEpicId())) {
+                subTasks.put(subTask.getId(), subTask);
+                epics.get(subTask.getEpicId()).addSubTaskToEpic(subTask.getId());
+                changeEpicStatus(subTask.getEpicId());
             } else {
                 System.out.println("Не удалось обновить подзадачу. На Канбан-доске не найден родительский эпик!");
             }
@@ -167,20 +134,20 @@ public class Manager {
 
     // изменение статуса родительского эпика при изменении статуса у подзадачи
     private void changeEpicStatus(SubTask subTask) {
-        changeEpicStatus(subTask.epicId);
+        changeEpicStatus(subTask.getEpicId());
     }
 
     // изменение статуса родительского эпика при изменении статуса у подзадачи
     private void changeEpicStatus(int idEpic) {
         if (epics.containsKey(idEpic)) {
-            String currentStatus = epics.get(idEpic).status;
+            String currentStatus = epics.get(idEpic).getStatus();
             String finalStatus;
 
-            if (!epics.get(idEpic).subTasks.isEmpty()) {
+            if (!epics.get(idEpic).getSubTasks().isEmpty()) {
                 HashSet<String> statusSet = new HashSet<>();
 
-                for (Integer idSubTask : epics.get(idEpic).subTasks) {
-                    statusSet.add(subTasks.get(idSubTask).status);
+                for (Integer idSubTask : epics.get(idEpic).getSubTasks()) {
+                    statusSet.add(subTasks.get(idSubTask).getStatus());
                 }
 
                 if (statusSet.contains(StatusList.IN_PROGRESS)) {
@@ -210,13 +177,13 @@ public class Manager {
         HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
 
         for (Epic epic : epics.values()) {
-            allTasks.put(epic.id, epic);
+            allTasks.put(epic.getId(), epic);
         }
         for (SubTask subTask : subTasks.values()) {
-            allTasks.put(subTask.id, subTask);
+            allTasks.put(subTask.getId(), subTask);
         }
         for (Task task : tasks.values()) {
-            allTasks.put(task.id, task);
+            allTasks.put(task.getId(), task);
         }
 
         return allTasks;
@@ -237,7 +204,7 @@ public class Manager {
         // ставим всем эпикам статус NEW и чистим связаанные сабтаски
         for (Epic epic : epics.values()) {
             epic.removeSubTasksFromEpic();
-            epic.setStatus(StatusList.NEW);
+            changeEpicStatus(epic.getId());
         }
     }
 
@@ -247,10 +214,10 @@ public class Manager {
             subTasks.clear();
         } else {
             for (Epic epic : epics.values()) {
-                if (!epic.subTasks.isEmpty()) {
-                    System.out.println("Эпик id" + epic.id + " - '" + epic.name + "' удалить невозможно!");
+                if (!epic.getSubTasks().isEmpty()) {
+                    System.out.println("Эпик id" + epic.getId() + " - '" + epic.getName() + "' удалить невозможно!");
                 } else {
-                    epics.remove(epic.id);
+                    epics.remove(epic.getId());
                 }
             }
         }
@@ -300,7 +267,7 @@ public class Manager {
             case "Task":
                 deleteTask(id);
             case "SubTask":
-                deleteSubTask(id, true);
+                deleteSubTask(id);
             default:
                 System.out.println("Задачу не удалось удалить. Возможно, она не существует.");
         }
@@ -309,14 +276,14 @@ public class Manager {
     public void deleteEpic(int id, boolean force) {
         if (epics.containsKey(id)) {
             Epic epic = epics.get(id);
-            if (!epic.subTasks.isEmpty() && !force) {
-                System.out.println("Эпик id" + epic.id + " - '" + epic.name + "' удалить невозможно!");
+            if (!epic.getSubTasks().isEmpty() && !force) {
+                System.out.println("Эпик id" + epic.getId() + " - '" + epic.getName() + "' удалить невозможно!");
             } else {
                 // удаляем сначала все подтаски
-                for (Integer idSubTask : epic.subTasks) {
-                    deleteSubTask(idSubTask, false);
+                for (Integer idSubTask : epic.getSubTasks()) {
+                    deleteSubTask(idSubTask);
                 }
-                epics.remove(epic.id);
+                epics.remove(epic.getId());
             }
         } else {
             System.out.println("Эпик с id = " + id + " не найден!");
@@ -331,14 +298,12 @@ public class Manager {
         }
     }
 
-    public void deleteSubTask(int id, boolean changeEpicStatus) {
+    public void deleteSubTask(int id) {
         if (subTasks.containsKey(id)) {
-            int epicId = subTasks.get(id).epicId;
+            int epicId = subTasks.get(id).getEpicId();
             subTasks.remove(id);
             epics.get(epicId).removeSubTaskFromEpic(id);
-            if (changeEpicStatus) {
-                changeEpicStatus(epicId);
-            }
+            changeEpicStatus(epicId);
         } else {
             System.out.println("Подзадача с id = " + id + " не найден!");
         }
@@ -348,7 +313,7 @@ public class Manager {
         if (epics.containsKey(epicId)) {
             HashMap<Integer, SubTask> epicSubTasks = new HashMap<>();
 
-            for (Integer idSubTask : epics.get(epicId).subTasks) {
+            for (Integer idSubTask : epics.get(epicId).getSubTasks()) {
                 if (subTasks.containsKey(idSubTask)) {
                     epicSubTasks.put(idSubTask, subTasks.get(idSubTask));
                 }
@@ -356,7 +321,7 @@ public class Manager {
 
             return epicSubTasks;
         } else {
-            return null;
+            return new HashMap<>();
         }
     }
 
@@ -375,7 +340,7 @@ public class Manager {
             String subTasksInfo = new String();
             String epicInfo;
             int counter = 1;
-            for (Integer idSubTask : epic.subTasks) {
+            for (Integer idSubTask : epic.getSubTasks()) {
                 if (counter == 1) {
                     subTasksInfo = subTasks.get(idSubTask).toString();
                 } else {
@@ -384,10 +349,10 @@ public class Manager {
                 counter++;
             }
             epicInfo = "Epic{" +
-                    "id=" + epic.id +
-                    ", name='" + epic.name +
-                    "', description='" + epic.description +
-                    "', status='" + epic.status +
+                    "id=" + epic.getId() +
+                    ", name='" + epic.getName() +
+                    "', description='" + epic.getDescription() +
+                    "', status='" + epic.getStatus() +
                     "', subTasks = ";
             if (subTasksInfo.length() == 0) {
                 epicInfo = epicInfo + "[null]}";

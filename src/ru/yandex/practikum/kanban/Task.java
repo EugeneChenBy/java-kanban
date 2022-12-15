@@ -1,10 +1,10 @@
 package ru.yandex.practikum.kanban;
 
 public class Task {
-    protected int id;
-    protected String name;
-    protected String description;
-    protected String status;
+    private int id;
+    private String name;
+    private String description;
+    private String status;
 
     public Task() {
         this.id = 0;
