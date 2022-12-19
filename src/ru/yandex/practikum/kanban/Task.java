@@ -4,7 +4,7 @@ public class Task {
     private int id;
     private String name;
     private String description;
-    private String status;
+    private Status status;
 
     public Task() {
         this.id = 0;
@@ -16,10 +16,10 @@ public class Task {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.status = StatusList.NEW;
+        this.status = Status.NEW;
     }
 
-    public Task(int id, String name, String description, String status) {
+    public Task(int id, String name, String description, Status status) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -30,7 +30,7 @@ public class Task {
         this.id = 0;
         this.name = name;
         this.description = description;
-        this.status = StatusList.NEW;
+        this.status = Status.NEW;
     }
 
     public int getId() {
@@ -45,7 +45,7 @@ public class Task {
         return description;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
@@ -61,13 +61,8 @@ public class Task {
         this.description = description;
     }
 
-    public void setStatus(String newStatus) {
-        if (StatusList.checkStatus(newStatus)) {
-            this.status = newStatus;
-        } else {
-            System.out.println("Статус '" + newStatus + "' неизвестен!");
-        }
-
+    public void setStatus(Status newStatus) {
+        this.status = newStatus;
     }
 
     @Override

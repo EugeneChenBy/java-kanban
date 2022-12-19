@@ -1,40 +1,17 @@
 import ru.yandex.practikum.kanban.*;
+
+import java.util.ArrayList;
+
 /*
-15.12.2022
-Убрал лишние методы по созданию задач в Manager
-Все параметры задач сделал private, обращения все переделал. Ты ведь это имел ввиду под интерфейсом, а не interface?
-Исправил баги со статусом. Все пересчеты статусов через отдельный метод.
----------------------------------------------
-13.12.2022
-Спасибо, классное ревью!
-Насчёт changeEpicStatus с параметром в deleteSubTask(int id, boolean changeEpicStatus) - я его с false вызываю только
-там, где у меня удаляется эпик - зачем пересчитывать статус по эпику, если мы следующим шагом его удалим?
-Ну и почему нельзя запустить по эпику сразу setStatus, если в нем просто операций меньше, нежели в changeEpicStatus,
-когда я знаю, что этого достаточно. В Java не обязательна такая строгая экономия ресурсов?
-Переработал статусы, теперь они статические и тольько в классе StatusList, может быть, лучше использовать enum тут,
-но я его пока не раскурил, боюсь ошибиться=)
-По 2 метода на создание объектов в Manager просто для моего удобства. Передалал на добавление через объект. Старые
-на всякий случай не удаляю пока.
-Модификаторы доступа у Task сделал protected, у дочерник SubTask и Epic сделал default. Всё кроме Main добавил в один
-пакет kanban. В Main-е импортнул его. Разъясни мне, пожалуйста, подробнее, если все-таки надо было оставить private
-что-то. Оч неудобно будет обращаться внутри Manager в обратном случае, потом по ходу поступления доп вводных в
-новых ТЗ передалаю, если надо будет.
----------------------------------------------
-11.12.2022
-Привет, Антон!
-
-Просьба не слишком придираться к моему варианту реализации, сам знаю, что можно улучшать, где-то доп проверки добавить,
-возвраты методов сразу заложить покачественнее, возвращать значения вместо void.
-Поскольку задание весьма абстрактное пока, буду добивать в следующих ТЗ. Пока попросту непонятно даже, как лучше сделать
-
-Я отстаю из-за пары больничных, и мне тяжело будет сейчас догнать, профукал срок дедлайна 4-го спринта,
-у всех студентов 26-го декабря, у меня из-за скидки госуслуг 19-го, заметил я только на этой неделе это.
-В академ не хочу идти, предпочитаю остаться с группой. За неделю скорее всего успею полностью спринт4 пройти.
+19.12.2022
+Я не уверен, что понимаю назначение класса Managers.
+И у меня почему-то не печатаются 
  */
 public class Main {
 
     public static void main(String[] args) {
-        Manager manager = new Manager();
+
+        TaskManager manager = Managers.getDefault();
 
         // вывод пустой Канбан-доски
         System.out.println(manager);
@@ -61,24 +38,40 @@ public class Main {
 
         System.out.println(manager.toString());
 
-        // играем со статусами
+        // тестируем просмотр задач
+        manager.getEpic(1);
+        manager.getSubTask(2);
+        manager.getSubTask(3);
+        manager.getEpic(4);
+        manager.getSubTask(5);
+        manager.getTask(6);
+        manager.getTask(7);
+        manager.getEpic(1);
+        manager.getSubTask(2);
+        manager.getSubTask(3);
+        manager.printHistory();
+
+        manager.getSubTask(5);
+        manager.getTask(6);
+        manager.getTask(7);
+        manager.printHistory();
+
+/*        // играем со статусами
         System.out.println("\nПроверка обновление статусов");
 
-        task1.setStatus(StatusList.IN_PROGRESS);
-        task2.setStatus(StatusList.DONE);
+        task1.setStatus(Status.IN_PROGRESS);
+        task2.setStatus(Status.DONE);
 
         manager.updateTask(task1);
         manager.updateTask(task2);
 
-        subTask1.setStatus(StatusList.IN_PROGRESS);
-        subTask2.setStatus(StatusList.NEW);
-        subTask3.setStatus(StatusList.DONE);
+        subTask1.setStatus(Status.IN_PROGRESS);
+        subTask2.setStatus(Status.NEW);
+        subTask3.setStatus(Status.DONE);
 
         manager.updateSubTask(subTask1);
         manager.updateSubTask(subTask2);
         manager.updateSubTask(subTask3);
-
-        System.out.println(manager);
 
         // удаляем и проверяем, что получилось
         System.out.println("\nПроверка удаления эпиков и задач");
@@ -88,6 +81,6 @@ public class Main {
         manager.deleteEpic(epic1.getId(), false);
 
         System.out.println(manager);
-
+*/
     }
 }
