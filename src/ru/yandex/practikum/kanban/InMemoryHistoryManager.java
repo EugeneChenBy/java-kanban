@@ -1,13 +1,14 @@
 package ru.yandex.practikum.kanban;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
     private List<Task> history;
+    private static final int HISTORY_LENGTH = 10;
 
     public InMemoryHistoryManager() {
-        history = new ArrayList<>();
+        history = new LinkedList<>();
     }
 
     @Override
@@ -17,18 +18,26 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
-        if (history.size() == 10) {
-            history.remove(0);
+        if (task != null) {
+            if (history.size() == HISTORY_LENGTH) {
+                history.remove(0);
+            }
+            history.add(task);
         }
-        history.add(task);
     }
 
     @Override
-    public void printHistory() {
+    public String toString() {
         int i = 1;
+        String result = null;
         for (Task task : history) {
-            System.out.println(i + " - " + task);
+            if (i == 1) {
+                result = i + " - " + task.toString();
+            } else {
+                result = result + "\n" + i + " - " + task.toString();
+            }
             i++;
         }
+        return result;
     }
 }

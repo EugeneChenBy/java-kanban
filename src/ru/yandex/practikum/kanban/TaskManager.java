@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface TaskManager {
+    public HistoryManager getHistoryManager();
+
     public HashMap<Integer, Epic> getEpics();
 
     public HashMap<Integer, Task> getTasks();
@@ -53,6 +55,4 @@ public interface TaskManager {
     public void deleteSubTask(int id);
 
     public HashMap<Integer, SubTask> getSubTasksOfEpic(int epicId);
-
-    public void printHistory();
 }

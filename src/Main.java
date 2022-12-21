@@ -1,8 +1,14 @@
 import ru.yandex.practikum.kanban.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /*
+21.12.2022
+Поменял в истории ArrayList на LinkedList. В пользу Linked выбор из-за частоты вызовов?
+Поправил косяки копипасты.
+Размер истории просмотров сделал константой.
+Просмотр истории сделал через получение внутренней переменной класса и toString()
 19.12.2022
 Я не уверен, что понимаю назначение класса Managers.
 И у меня почему-то не печатаются задачи. До создания Managers все работало. Ощущение, что как-то неправильно
@@ -39,9 +45,10 @@ public class Main {
         task1 = manager.addTask(task1);
         task2 = manager.addTask(task2);
 
-        System.out.println(manager.toString());
+        System.out.println(manager);
 
         // тестируем просмотр задач
+        System.out.println("Печатаем историю просмотра:");
         manager.getEpic(1);
         manager.getSubTask(2);
         manager.getSubTask(3);
@@ -52,12 +59,13 @@ public class Main {
         manager.getEpic(1);
         manager.getSubTask(2);
         manager.getSubTask(3);
-        manager.printHistory();
+        System.out.println(manager.getHistoryManager());
 
+        System.out.println("Еще 3 просмотра:");
         manager.getSubTask(5);
         manager.getTask(6);
         manager.getTask(7);
-        manager.printHistory();
+        System.out.println(manager.getHistoryManager());
 
 /*        // играем со статусами
         System.out.println("\nПроверка обновление статусов");
