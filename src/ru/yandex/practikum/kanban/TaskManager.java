@@ -1,7 +1,6 @@
 package ru.yandex.practikum.kanban;
 
 import java.util.HashMap;
-import java.util.List;
 
 public interface TaskManager {
     public HistoryManager getHistoryManager();
@@ -36,7 +35,7 @@ public interface TaskManager {
 
     public void deleteSubTasks();
 
-    public void deleteEpics(boolean force);
+    public void deleteEpics();
 
     public Object getAnyTask(int id);
 
@@ -46,9 +45,9 @@ public interface TaskManager {
 
     public SubTask getSubTask(int id);
 
-    public void deleteAny(int id, boolean force);
+    public void deleteAny(int id);
 
-    public void deleteEpic(int id, boolean force);
+    public void deleteEpic(int id);
 
     public void deleteTask(int id);
 
