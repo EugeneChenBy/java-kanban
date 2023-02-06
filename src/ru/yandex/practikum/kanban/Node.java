@@ -13,8 +13,20 @@ public class Node {
 
     @Override
     public String toString(){
-        return this.task.toString() + "\n" +
-                "prev Node-task" + this.prev.task.toString() + "\n" +
-                "prev Node-task" + this.next.task.toString();
+        String returnText = this.task.toString();
+
+        if(this.prev != null) {
+            returnText = returnText + "\n" + "prev Node-task = " + this.prev.task.toString();
+        } else {
+            returnText = returnText + "\n" + "prev Node-task = null";
+        }
+
+        if(this.next != null) {
+            returnText = returnText + "\n" + "next Node-task = " + this.next.task.toString();
+        } else {
+            returnText = returnText + "\n" + "next Node-task = null";
+        }
+
+        return returnText;
     }
 }

@@ -2,6 +2,7 @@ package ru.yandex.practikum.kanban;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
@@ -46,30 +47,32 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
 
         public void removeNode(Node element) {
-            final Node prev = element.prev;
-            final Node next = element.next;
+            if (element != null) {
+                final Node prev = element.prev;
+                final Node next = element.next;
 
-            // если удаляемый элемент - голова
-            if (prev == null) {
-                head = next;
-            } else { // если не голова, то вяжем предыдущему узлу следующий и отвязывыаем от элемента предыдущий
-                prev.next = next;
-                element.prev = null;
+                // если удаляемый элемент - голова
+                if (prev == null) {
+                    head = next;
+                } else {
+                    prev.next = next;
+                    element.prev = null;
+                }
+
+                history.remove(element.task.getId());
+
+                // если удаляемый элемент - хвост
+                if (next == null) {
+                    tail = prev;
+                } else {
+                    next.prev = prev;
+                    element.next = null;
+                }
+
+                element.task = null;
+
+                size--;
             }
-
-            history.remove(element.task.getId());
-
-            // если удаляемые элемент - хвост
-            if (next == null) {
-                tail = prev;
-            } else { // если не голова, то вяжем следующему узлу предыдущий и отвязываем от элемента следующий
-                next.prev = prev;
-                element.next = null;
-            }
-
-            element.task = null;
-
-            size--;
         }
     }
 
