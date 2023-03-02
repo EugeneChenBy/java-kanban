@@ -11,11 +11,11 @@ public interface TaskManager {
 
     public HashMap<Integer, SubTask> getSubTasks();
 
-    public Epic addEpic(Epic epic);
+    public void addEpic(Epic epic);
 
-    public Task addTask(Task task);
+    public void addTask(Task task);
 
-    public SubTask addSubTask(SubTask subTask);
+    public void addSubTask(SubTask subTask);
 
     public void updateAny(Object object);
 

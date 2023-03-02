@@ -1,6 +1,8 @@
 package ru.yandex.practikum.kanban;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class Epic extends Task {
     private HashSet<Integer> subTasks;
@@ -42,6 +44,11 @@ public class Epic extends Task {
 
     public void removeSubTasksFromEpic() {
         subTasks.clear();
+    }
+
+    @Override
+    public String toStringShort(String separator) {
+        return String.join(separator, Integer.toString(getId()), Type.EPIC.toString(), getName(), getStatus().toString(), getDescription());
     }
 
     @Override

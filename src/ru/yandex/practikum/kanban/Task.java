@@ -65,6 +65,10 @@ public class Task {
         this.status = newStatus;
     }
 
+    public String toStringShort(String separator) {
+        return String.join(separator, Integer.toString(id), Type.TASK.toString(), name, status.toString(), description);
+    }
+
     @Override
     public String toString() {
         return "Task{" +

@@ -1,5 +1,8 @@
 package ru.yandex.practikum.kanban;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SubTask extends Task {
     private int epicId;
 
@@ -29,6 +32,11 @@ public class SubTask extends Task {
 
     public void setEpicId(int epicId) {
         this.epicId = epicId;
+    }
+
+    @Override
+    public String toStringShort(String separator) {
+        return String.join(separator, Integer.toString(getId()), Type.SUBTASK.toString(), getName(), getStatus().toString(), getDescription(), Integer.toString(epicId));
     }
 
     @Override

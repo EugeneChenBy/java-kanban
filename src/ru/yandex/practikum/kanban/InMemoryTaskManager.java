@@ -44,57 +44,63 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Epic addEpic(Epic epic) {
+    public void addEpic(Epic epic) {
         if (epic.getStatus() != Status.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
-            return null;
+        } else {
+            if (epic.getId() > 0) {
+                id = epic.getId();
+            } else {
+                epic.setId(getNewId());
+            }
+            epics.put(epic.getId(), epic);
         }
-        epic.setId(getNewId());
-        epics.put(epic.getId(), epic);
-
-        return epic;
     }
 
     @Override
-    public Task addTask(Task task) {
+    public void addTask(Task task) {
         if (task.getStatus() != Status.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
-            return null;
+        } else {
+            if (task.getId() > 0) {
+                id = task.getId();
+            } else {
+                task.setId(getNewId());
+            }
+            tasks.put(task.getId(), task);
         }
-        task.setId(getNewId());
-        tasks.put(task.getId(), task);
-
-        return task;
     }
 
     @Override
-    public SubTask addSubTask(SubTask subTask) {
+    public void addSubTask(SubTask subTask) {
         if (subTask.getStatus() != Status.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
-            return null;
-        }
-        if (epics.containsKey(subTask.getEpicId())) {
-            subTask.setId(getNewId());
+        } else if (epics.containsKey(subTask.getEpicId())) {
+            if (subTask.getId() > 0) {
+                id = subTask.getId();
+            } else {
+                subTask.setId(getNewId());
+            }
             subTasks.put(subTask.getId(), subTask);
             epics.get(subTask.getEpicId()).addSubTaskToEpic(subTask.getId());
             changeEpicStatus(subTask.getEpicId());
-
-            return subTask;
         } else {
             System.out.println("Не удалось создать задачу. Не найден эпик!");
-            return null;
         }
     }
 
     @Override
     public void updateAny(Object object) {
-        switch (object.getClass().getName()) {
+        switch (object.getClass().getSimpleName()) {
             case "Epic":
                 updateEpic((Epic)object);
+                break;
             case "Task":
                 updateTask((Task)object);
+                break;
             case "SubTask":
                 updateSubTask((SubTask)object);
+                break;
             default:
                 System.out.println("Ошибка. Не удалось определить сущность для обновления!");
         }
@@ -286,10 +292,13 @@ public class InMemoryTaskManager implements TaskManager {
         switch (object.getClass().getName()) {
             case "Epic":
                 deleteEpic(id);
+                break;
             case "Task":
                 deleteTask(id);
+                break;
             case "SubTask":
                 deleteSubTask(id);
+                break;
             default:
                 System.out.println("Задачу не удалось удалить. Возможно, она не существует.");
         }
