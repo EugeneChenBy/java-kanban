@@ -1,5 +1,7 @@
 package ru.yandex.practikum.kanban;
 
+import ru.yandex.practikum.tasks.*;
+
 import java.util.HashMap;
 
 public interface TaskManager {

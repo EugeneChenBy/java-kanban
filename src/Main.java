@@ -1,4 +1,7 @@
 import ru.yandex.practikum.kanban.*;
+import ru.yandex.practikum.tasks.Epic;
+import ru.yandex.practikum.tasks.SubTask;
+import ru.yandex.practikum.tasks.Task;
 
 public class Main {
 

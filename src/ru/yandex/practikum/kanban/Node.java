@@ -1,5 +1,7 @@
 package ru.yandex.practikum.kanban;
 
+import ru.yandex.practikum.tasks.Task;
+
 public class Node {
     public Task task;
     public Node next;

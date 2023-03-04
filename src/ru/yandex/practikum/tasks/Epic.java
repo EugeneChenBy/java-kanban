@@ -1,8 +1,6 @@
-package ru.yandex.practikum.kanban;
+package ru.yandex.practikum.tasks;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 
 public class Epic extends Task {
     private HashSet<Integer> subTasks;

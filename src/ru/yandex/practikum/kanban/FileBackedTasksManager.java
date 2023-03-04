@@ -1,5 +1,7 @@
 package ru.yandex.practikum.kanban;
 
+import ru.yandex.practikum.tasks.*;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -8,17 +10,39 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+/*
+04.03.2023
+Привет, Антон!
+Разнёс классы по 2-м пакетам. Из конструктора логику вынес.
+По твоим комментариям:
 
-public class FileBackedTasksManager extends InMemoryTaskManager{
-    Path file = null;
+"После того, как все задачи из файла прочитаны, нам надо выставить значение idGenerator соответствующим образом, чтобы не перезатереть задачи, прочитанные из файла."
+Я это уже сделал в InMemoryTaskManager в addTask/SubTask/Epic. Посчитал, что не стоит отдавать управление айдишником вовне.
+
+"historyToString
+Ты же использовал метод String.join() в другом месте в программе.
+Почему тут его не использовать?"
+А как это можно сделать без stream? В предыдущем спринте я еще не знал, что это такое. Исправил сейчас на него
+
+По toStringShort - сделаю класс для сериализации и десерализации в рамках следующего ТЗ. И почему-то мне кажется, что это будет одним из заданий в 2-х следующих ТЗ
+
+
+ */
+
+public class FileBackedTasksManager extends InMemoryTaskManager {
     String fileName = null;
 
     private static final String HEAD = "id,type,name,status,description,epic";
 
-    public FileBackedTasksManager(String fileName) throws IOException {
+    public FileBackedTasksManager(String fileName) {
         super();
 
         this.fileName = fileName;
+    }
+
+    public void createOrLoad()  throws IOException{
+        Path file = null;
 
         if (!Files.exists(Paths.get(fileName))) {
             file = Files.createFile(Paths.get(fileName));
@@ -26,20 +50,20 @@ public class FileBackedTasksManager extends InMemoryTaskManager{
             file = Paths.get(fileName);
             try (BufferedReader br = new BufferedReader(new FileReader(file.toFile(), Charset.forName("windows-1251")))) {
                 int row = 0;
-                boolean historyIsNext = false;
 
                 while (br.ready()) {
                     row++;
                     String line = br.readLine();
                     if (row > 1) {
                         if (line.isEmpty()) {
-                            historyIsNext = true;
-                        } else if (historyIsNext) {
-                            List<Integer> historyList = historyFromString(line);
-                            HistoryManager historyManager = getHistoryManager();
-                            HashMap<Integer, Task> listAllTasks = getAll();
-                            for (Integer id : historyList) {
-                                historyManager.add(listAllTasks.get(id));
+                            line = br.readLine();
+                            if (line != null) {
+                                List<Integer> historyList = historyFromString(line);
+                                HistoryManager historyManager = getHistoryManager();
+                                HashMap<Integer, Task> listAllTasks = getAll();
+                                for (Integer id : historyList) {
+                                    historyManager.add(listAllTasks.get(id));
+                                }
                             }
                         } else {
                             Task item = fromString(line);
@@ -110,16 +134,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager{
 
     static String historyToString(HistoryManager manager) {
         List<Task> list = manager.getHistory();
-        String history = null;
-        for (int i = 0; i < list.size(); i++) {
-            Task task = list.get(i);
-            String id = Integer.toString(task.getId());
-            if (i == 0) {
-                history = id;
-            } else {
-                history = history + "," + id;
-            }
-        }
+
+        String history = list.stream()
+                .map(Task::getId)
+                .map(id -> Integer.toString(id))
+                .collect(Collectors.joining(","));
+
         return history;
     }
 
@@ -229,7 +249,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager{
     public Epic getEpic(int id) {
         Epic epic = super.getEpic(id);
         if (epic != null) {
-            System.out.println(epic);
             save();
         }
         return epic;

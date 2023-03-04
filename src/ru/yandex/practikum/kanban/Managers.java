@@ -1,6 +1,5 @@
 package ru.yandex.practikum.kanban;
 
-import java.io.File;
 import java.io.IOException;
 
 public class Managers {
@@ -13,7 +12,11 @@ public class Managers {
     }
 
     public static FileBackedTasksManager loadFromFile(String fileName) throws IOException {
-        return new FileBackedTasksManager(fileName);
+        FileBackedTasksManager manager = new FileBackedTasksManager(fileName);
+
+        manager.createOrLoad();
+
+        return manager;
     }
 
 

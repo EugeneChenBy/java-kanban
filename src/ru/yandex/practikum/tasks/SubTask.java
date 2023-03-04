@@ -1,7 +1,4 @@
-package ru.yandex.practikum.kanban;
-
-import java.util.ArrayList;
-import java.util.List;
+package ru.yandex.practikum.tasks;
 
 public class SubTask extends Task {
     private int epicId;

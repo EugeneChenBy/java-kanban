@@ -1,4 +1,4 @@
-package ru.yandex.practikum.kanban;
+package ru.yandex.practikum.tasks;
 
 public enum Type {
     EPIC,
