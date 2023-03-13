@@ -7,33 +7,16 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-/*
-04.03.2023
-Привет, Антон!
-Разнёс классы по 2-м пакетам. Из конструктора логику вынес.
-По твоим комментариям:
-
-"После того, как все задачи из файла прочитаны, нам надо выставить значение idGenerator соответствующим образом, чтобы не перезатереть задачи, прочитанные из файла."
-Я это уже сделал в InMemoryTaskManager в addTask/SubTask/Epic. Посчитал, что не стоит отдавать управление айдишником вовне.
-
-"historyToString
-Ты же использовал метод String.join() в другом месте в программе.
-Почему тут его не использовать?"
-А как это можно сделать без stream? В предыдущем спринте я еще не знал, что это такое. Исправил сейчас на него
-
-По toStringShort - сделаю класс для сериализации и десерализации в рамках следующего ТЗ. И почему-то мне кажется, что это будет одним из заданий в 2-х следующих ТЗ
-
-
- */
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
     String fileName = null;
-
-    private static final String HEAD = "id,type,name,status,description,epic";
+    private static final String HEAD = "id,type,name,status,description,timestart,duration,epic";
 
     public FileBackedTasksManager(String fileName) {
         super();
@@ -97,21 +80,35 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String name = attrs[2];
         String description = attrs[4];
         Type type = Type.valueOf(attrs[1]);
+        LocalDateTime startTime = null;
+        try {
+            if (!attrs[5].isEmpty()) {
+                startTime = LocalDateTime.parse(attrs[5], DATE_TIME_FORMATTER);
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        Duration duration = null;
+        try {
+            if (!attrs[6].isEmpty()) {
+                duration = Duration.ofMinutes(Long.parseLong(attrs[6]));
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
 
         switch (type) {
             case EPIC:
                 return new Epic(id, name, description, status);
             case TASK:
-                return new Task(id, name, description, status);
+                return new Task(id, name, description, startTime, duration, status);
             case SUBTASK:
-                return new SubTask(id, name, description, status, Integer.parseInt(attrs[5]));
+                return new SubTask(id, name, description, startTime, duration, status, Integer.parseInt(attrs[7]));
             default:
                 System.out.println("Невозможно создать задачу из строки: '" + value + "'.");
                 return null;
         }
     }
 
-    public void save() {
+    private void save() {
         try (FileWriter fileWriter = new FileWriter(fileName, Charset.forName("windows-1251"))) {
             fileWriter.write(HEAD + "\n");
 
@@ -132,7 +129,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    static String historyToString(HistoryManager manager) {
+    private static String historyToString(HistoryManager manager) {
         List<Task> list = manager.getHistory();
 
         String history = list.stream()
@@ -141,9 +138,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 .collect(Collectors.joining(","));
 
         return history;
+
     }
 
-    static List<Integer> historyFromString(String value) {
+    private static List<Integer> historyFromString(String value) {
         String[] historyIdStr = value.split(",");
 
         List<Integer> historyId = new ArrayList<>();
@@ -170,12 +168,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     @Override
     public void addSubTask(SubTask subTask) {
         super.addSubTask(subTask);
-        save();
-    }
-
-    @Override
-    public void updateAny(Object object) {
-        super.updateAny(object);
         save();
     }
 
@@ -218,12 +210,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     @Override
     public void deleteEpics() {
         super.deleteEpics();
-        save();
-    }
-
-    @Override
-    public void deleteAny(int id) {
-        super.deleteAny(id);
         save();
     }
 
@@ -281,23 +267,48 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             System.out.println("Загруженная история");
             System.out.println(manager.getHistoryManager());
 
-            Task task1 = new Task("Задача 1", "Описание тестовой задачи 1");
-            Task task2 = new Task("Задача 2", "Описание тестовой задачи 2");
+            LocalDateTime task1DateTime = LocalDateTime.parse("01.04.2023 14:00", DATE_TIME_FORMATTER);
+            Duration task1Duration = Duration.ofMinutes(60);
+            LocalDateTime task2DateTime = LocalDateTime.parse("15.03.2023 11:30", DATE_TIME_FORMATTER);
+            Duration task2Duration = Duration.ofMinutes(45);
+
+            Task task1 = new Task("Задача 1", "Описание тестовой задачи 1", task1DateTime, task1Duration);
+            Task task2 = new Task("Задача 2", "Описание тестовой задачи 2", task2DateTime, task2Duration);
             manager.addTask(task1);
             manager.addTask(task2);
 
             Epic epic1 = new Epic("Эпик 1", "Описание тестового эпика 1 с 3-мя подзадачами");
             manager.addEpic(epic1);
 
-            SubTask subTask1 = new SubTask("Подзадача 1", "Описание тестовой подзадачи 1 эпика 1", epic1.getId());
-            SubTask subTask2 = new SubTask("Подзадача 2", "Описание тестовой подзадачи 2 эпика 1", epic1.getId());
-            SubTask subTask3 = new SubTask("Подзадача 3", "Описание тестовой подзадачи 3 эпика 1", epic1.getId());
+            LocalDateTime subTask1DateTime = LocalDateTime.parse("01.04.2023 16:15", DATE_TIME_FORMATTER);
+            Duration subTask1Duration = Duration.ofMinutes(35);
+            LocalDateTime subTask2DateTime = LocalDateTime.parse("29.03.2023 22:00", DATE_TIME_FORMATTER);
+            Duration subTask2Duration = Duration.ofMinutes(70);
+            LocalDateTime subTask3DateTime = LocalDateTime.parse("23.03.2023 00:30", DATE_TIME_FORMATTER);
+            Duration subTask3Duration = Duration.ofMinutes(120);
+
+            SubTask subTask1 = new SubTask("Подзадача 1", "Описание тестовой подзадачи 1 эпика 1", subTask1DateTime, subTask1Duration, epic1.getId());
+            SubTask subTask2 = new SubTask("Подзадача 2", "Описание тестовой подзадачи 2 эпика 1", subTask2DateTime, subTask2Duration, epic1.getId());
+            SubTask subTask3 = new SubTask("Подзадача 3", "Описание тестовой подзадачи 3 эпика 1", subTask3DateTime, subTask3Duration, epic1.getId());
             manager.addSubTask(subTask1);
             manager.addSubTask(subTask2);
             manager.addSubTask(subTask3);
 
             Epic epic2 = new Epic("Эпик 2", "Описание тестового эпика 2 без подзадач");
             manager.addEpic(epic2);
+
+            LocalDateTime task3DateTime = LocalDateTime.parse("15.05.2023 11:30", DATE_TIME_FORMATTER);
+            Duration task3Duration = null;
+
+            Task task3 = new Task("Задача 3", "Описание тестовой задачи 3", task3DateTime, task3Duration);
+            Task task4 = new Task("Задача 4", "Описание тестовой задачи 4");
+            manager.addTask(task3);
+            manager.addTask(task4);
+
+            LocalDateTime subTask4DateTime = null;
+            Duration subTask4Duration = Duration.ofMinutes(120);
+            SubTask subTask4 = new SubTask("Подзадача 4", "Описание тестовой подзадачи 4 эпика 2", subTask4DateTime, subTask4Duration, epic2.getId());
+            manager.addSubTask(subTask4);
 
             System.out.println("Создали новые задачи");
             System.out.println(manager);
@@ -320,7 +331,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             manager.getSubTask(6);
             manager.getSubTask(5);
             System.out.println(manager.getHistoryManager());
-
+            /*
             System.out.println("Удаляем задачи 2 и 6:");
             manager.deleteTask(2);
             manager.deleteSubTask(6);
@@ -333,7 +344,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             manager.getTask(9);
             manager.getSubTask(12);
             System.out.println(manager.getHistoryManager());
-
+*/
 
         } catch (IOException e) {
             e.printStackTrace();

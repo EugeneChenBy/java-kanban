@@ -3,7 +3,7 @@ package ru.yandex.practikum.kanban;
 import java.io.IOException;
 
 public class Managers {
-    public static TaskManager getDefault() {
+    public static InMemoryTaskManager getDefault() {
         return new InMemoryTaskManager();
     }
 

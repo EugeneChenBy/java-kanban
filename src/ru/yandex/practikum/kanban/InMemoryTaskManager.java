@@ -1,17 +1,23 @@
 package ru.yandex.practikum.kanban;
 
+import org.w3c.dom.ls.LSOutput;
 import ru.yandex.practikum.tasks.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
+    private final LocalDateTime MIN_DATE_TIME = LocalDateTime.of(1970, 1, 1, 0, 0);
+    private final LocalDateTime MAX_DATE_TIME = LocalDateTime.of(3000, 1, 1, 0, 0);
+    public static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private int id;
     private HashMap<Integer, Epic> epics;
     private HashMap<Integer, Task> tasks;
     private HashMap<Integer, SubTask> subTasks;
+    private TreeSet<Task> sortedTasks;
+    private TimeLine timeLine;
 
     private HistoryManager historyManager;
 
@@ -20,17 +26,38 @@ public class InMemoryTaskManager implements TaskManager {
         epics = new HashMap<>();
         tasks = new HashMap<>();
         subTasks = new HashMap<>();
+        Comparator<Task> dateComparator = new Comparator<>() {
+            @Override
+            public int compare(Task task1, Task task2) {
+                LocalDateTime date1 = task1.getStartTime();
+                LocalDateTime date2 = task2.getStartTime();
+                if (date1 == null) {date1 = LocalDateTime.of(3000, 1, 1, 0, 0);}
+                if (date2 == null) {date2 = LocalDateTime.of(3000, 1, 1, 0, 0);}
+                if (date1.isBefore(date2)) {
+                    return -1;
+                } else if (date1.isAfter(date2)) {
+                    return 1;
+                } else {
+                    return task1.getId() - task2.getId();
+                }
+            }
+        };
+        sortedTasks = new TreeSet<Task>(dateComparator);
         historyManager = Managers.getDefaultHistory();
+        timeLine = new TimeLine(1, 15); // планируем на год вперед и с минимальным временем исполнения задачи в 15 минут
     }
 
+    @Override
     public HashMap<Integer, Epic> getEpics() {
         return epics;
     }
 
+    @Override
     public HashMap<Integer, Task> getTasks() {
         return tasks;
     }
 
+    @Override
     public HashMap<Integer, SubTask> getSubTasks() {
         return subTasks;
     }
@@ -64,12 +91,17 @@ public class InMemoryTaskManager implements TaskManager {
         if (task.getStatus() != Status.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
         } else {
-            if (task.getId() > 0) {
-                id = task.getId();
+            if (timeLine.addTaskToTimeLine(task)) {
+                if (task.getId() > 0) {
+                    id = task.getId();
+                } else {
+                    task.setId(getNewId());
+                }
+                tasks.put(task.getId(), task);
+                sortedTasks.add(task);
             } else {
-                task.setId(getNewId());
+                System.out.println("Запланированное по задаче время уже занято в календаре!");
             }
-            tasks.put(task.getId(), task);
         }
     }
 
@@ -78,33 +110,22 @@ public class InMemoryTaskManager implements TaskManager {
         if (subTask.getStatus() != Status.NEW) {
             System.out.println("Задача должна создаваться в статусе 'NEW'!");
         } else if (epics.containsKey(subTask.getEpicId())) {
-            if (subTask.getId() > 0) {
-                id = subTask.getId();
+            if (timeLine.addTaskToTimeLine(subTask)) {
+                if (subTask.getId() > 0) {
+                    id = subTask.getId();
+                } else {
+                    subTask.setId(getNewId());
+                }
+                subTasks.put(subTask.getId(), subTask);
+                sortedTasks.add(subTask);
+                epics.get(subTask.getEpicId()).addSubTaskToEpic(subTask.getId());
+                changeEpicStatus(subTask.getEpicId());
+                calcEpicStartEndPeriod(subTask.getEpicId());
             } else {
-                subTask.setId(getNewId());
+                System.out.println("Запланированное по задаче время уже занято в календаре!");
             }
-            subTasks.put(subTask.getId(), subTask);
-            epics.get(subTask.getEpicId()).addSubTaskToEpic(subTask.getId());
-            changeEpicStatus(subTask.getEpicId());
         } else {
             System.out.println("Не удалось создать задачу. Не найден эпик!");
-        }
-    }
-
-    @Override
-    public void updateAny(Object object) {
-        switch (object.getClass().getSimpleName()) {
-            case "Epic":
-                updateEpic((Epic)object);
-                break;
-            case "Task":
-                updateTask((Task)object);
-                break;
-            case "SubTask":
-                updateSubTask((SubTask)object);
-                break;
-            default:
-                System.out.println("Ошибка. Не удалось определить сущность для обновления!");
         }
     }
 
@@ -122,8 +143,18 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
-        if (tasks.containsKey(task.getId())) {
-            tasks.put(task.getId(), task);
+        Task oldTask = tasks.get(task.getId());
+
+        if (oldTask != null) {
+            if (timeLine.isPossibleToUpdateTimeTask(oldTask, task)) {
+                timeLine.clearTimeLineOfTask(oldTask);
+                tasks.put(task.getId(), task);
+                sortedTasks.remove(oldTask);
+                sortedTasks.add(task);
+                timeLine.addTaskToTimeLine(task);
+            } else {
+                System.out.println("Невозможно добавить задачу. Запланированное на задачу время уже занято в календаре!");
+            }
         } else {
             System.out.println("Не удалось обновить задачу. На Канбан-доске такая задача не найдена!");
         }
@@ -132,11 +163,21 @@ public class InMemoryTaskManager implements TaskManager {
     // обновление подзадачи снаружу
     @Override
     public void updateSubTask(SubTask subTask) {
-        if (subTasks.containsKey(subTask.getId())) {
+        SubTask oldSubTask = subTasks.get(subTask.getId());
+        if (oldSubTask != null) {
             if (epics.containsKey(subTask.getEpicId())) {
-                subTasks.put(subTask.getId(), subTask);
-                epics.get(subTask.getEpicId()).addSubTaskToEpic(subTask.getId());
-                changeEpicStatus(subTask.getEpicId());
+                if (timeLine.isPossibleToUpdateTimeTask(oldSubTask, subTask)) {
+                    timeLine.clearTimeLineOfTask(oldSubTask);
+                    subTasks.put(subTask.getId(), subTask);
+                    sortedTasks.remove(oldSubTask);
+                    sortedTasks.add(subTask);
+                    timeLine.addTaskToTimeLine(subTask);
+                    epics.get(subTask.getEpicId()).addSubTaskToEpic(subTask.getId());
+                    changeEpicStatus(subTask.getEpicId());
+                    calcEpicStartEndPeriod(subTask.getEpicId());
+                } else {
+                    System.out.println("Невозможно добавить задачу. Запланированное на задачу время уже занято в календаре!");
+                }
             } else {
                 System.out.println("Не удалось обновить подзадачу. На Канбан-доске не найден родительский эпик!");
             }
@@ -185,6 +226,55 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
+    private void calcEpicStartEndPeriod(int idEpic) {
+        if (epics.containsKey(idEpic)) {
+            if (!epics.get(idEpic).getSubTasks().isEmpty()) {
+                LocalDateTime minStartTime = MAX_DATE_TIME;
+                LocalDateTime tmpStartTime = null;
+                LocalDateTime maxEndTime = MIN_DATE_TIME;
+                LocalDateTime tmpEndTime = null;
+                Duration sumDuration = Duration.ofMinutes(0);
+                Duration tmpDuration = null;
+
+                for (Integer idSubTask : epics.get(idEpic).getSubTasks()) {
+                    tmpStartTime = subTasks.get(idSubTask).getStartTime();
+                    if (tmpStartTime != null) {
+                        if (tmpStartTime.isBefore(minStartTime)) {
+                            minStartTime = tmpStartTime;
+                        }
+                    }
+
+                    tmpEndTime = subTasks.get(idSubTask).getEndTime();
+                    if (tmpEndTime != null) {
+                        if (tmpEndTime.isAfter(maxEndTime)) {
+                            maxEndTime = tmpEndTime;
+                        }
+                    }
+
+                    tmpDuration = subTasks.get(idSubTask).getDuration();
+                    if (tmpDuration != null) {
+                        sumDuration = sumDuration.plus(tmpDuration);
+                    }
+                }
+                if (minStartTime.isEqual(MAX_DATE_TIME)) {
+                    minStartTime = null;
+                }
+                if (maxEndTime.isEqual(MIN_DATE_TIME)) {
+                    maxEndTime = null;
+                }
+                epics.get(idEpic).setStartTime(minStartTime);
+                epics.get(idEpic).setEndDate(maxEndTime);
+                epics.get(idEpic).setDuration(sumDuration);
+            } else {
+                epics.get(idEpic).setStartTime(null);
+                epics.get(idEpic).setEndDate(null);
+                epics.get(idEpic).setDuration(null);
+            }
+        } else {
+            System.out.println("Эпик с идентификатором " + idEpic + " не найден");
+        }
+    }
+
     // получение всех сущностей Канбан-доски
     @Override
     public HashMap<Integer, Task> getAll() {
@@ -208,12 +298,17 @@ public class InMemoryTaskManager implements TaskManager {
         deleteTasks();
         deleteEpics();
         deleteSubTasks();
+        historyManager.removeAll();
+        timeLine.clearAllTimeLine();
+        sortedTasks.clear();
     }
 
     @Override
     public void deleteTasks() {
         for(Task task : tasks.values()) {
             historyManager.remove(task.getId());
+            timeLine.clearTimeLineOfTask(task);
+            sortedTasks.remove(task);
         }
         tasks.clear();
     }
@@ -222,6 +317,8 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteSubTasks() {
         for(SubTask subTask : subTasks.values()) {
             historyManager.remove(subTask.getId());
+            timeLine.clearTimeLineOfTask(subTask);
+            sortedTasks.clear();
         }
         subTasks.clear();
 
@@ -229,6 +326,7 @@ public class InMemoryTaskManager implements TaskManager {
         for (Epic epic : epics.values()) {
             epic.removeSubTasksFromEpic();
             changeEpicStatus(epic.getId());
+            calcEpicStartEndPeriod(epic.getId());
         }
     }
 
@@ -243,18 +341,6 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.remove(epic.getId());
         }
         epics.clear();
-    }
-
-    @Override
-    // получение любой сущности Канбан-доски по id
-    public Object getAnyTask(int id) {
-        HashMap<Integer, Task> tasks = getAll();
-
-        if (tasks.containsKey(id)) {
-            return tasks.get(id);
-        } else {
-            return null;
-        }
     }
 
     @Override
@@ -288,25 +374,6 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteAny(int id) {
-        Object object = getAnyTask(id);
-
-        switch (object.getClass().getName()) {
-            case "Epic":
-                deleteEpic(id);
-                break;
-            case "Task":
-                deleteTask(id);
-                break;
-            case "SubTask":
-                deleteSubTask(id);
-                break;
-            default:
-                System.out.println("Задачу не удалось удалить. Возможно, она не существует.");
-        }
-    }
-
-    @Override
     public void deleteEpic(int id) {
         if (epics.containsKey(id)) {
             Epic epic = epics.get(id);
@@ -330,6 +397,8 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteTask(int id) {
         if (tasks.containsKey(id)) {
             historyManager.remove(id);
+            timeLine.clearTimeLineOfTask(tasks.get(id));
+            sortedTasks.remove(tasks.get(id));
             tasks.remove(id);
         } else {
             System.out.println("Задача с id = " + id + " не найден!");
@@ -341,9 +410,12 @@ public class InMemoryTaskManager implements TaskManager {
         if (subTasks.containsKey(id)) {
             int epicId = subTasks.get(id).getEpicId();
             historyManager.remove(id);
+            timeLine.clearTimeLineOfTask(subTasks.get(id));
             epics.get(epicId).removeSubTaskFromEpic(id);
+            sortedTasks.remove(subTasks.get(id));
             subTasks.remove(id);
             changeEpicStatus(epicId);
+            calcEpicStartEndPeriod(epicId);
         } else {
             System.out.println("Подзадача с id = " + id + " не найден!");
         }
@@ -364,6 +436,16 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             return new HashMap<>();
         }
+    }
+
+    @Override
+    public List<Task> getPrioritizedTasks() {
+        return new ArrayList<Task>(sortedTasks);
+    }
+
+    @Override
+    public TimeLine getTimeLine() {
+        return timeLine;
     }
 
     @Override
@@ -389,11 +471,13 @@ public class InMemoryTaskManager implements TaskManager {
                 }
                 counter++;
             }
+
             epicInfo = "Epic{" +
                     "id=" + epic.getId() +
                     ", name='" + epic.getName() +
                     "', description='" + epic.getDescription() +
-                    "', status='" + epic.getStatus() +
+                    ", " + epic.getStringStartEndDuration() +
+                    ", status='" + epic.getStatus() +
                     "', subTasks = ";
             if (subTasksInfo.length() == 0) {
                 epicInfo = epicInfo + "[null]}";

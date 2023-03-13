@@ -3,6 +3,7 @@ package ru.yandex.practikum.kanban;
 import ru.yandex.practikum.tasks.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 public interface TaskManager {
     public HistoryManager getHistoryManager();
@@ -18,8 +19,6 @@ public interface TaskManager {
     public void addTask(Task task);
 
     public void addSubTask(SubTask subTask);
-
-    public void updateAny(Object object);
 
     public void updateEpic(Epic epic);
 
@@ -39,15 +38,11 @@ public interface TaskManager {
 
     public void deleteEpics();
 
-    public Object getAnyTask(int id);
-
     public Epic getEpic(int id);
 
     public Task getTask(int id);
 
     public SubTask getSubTask(int id);
-
-    public void deleteAny(int id);
 
     public void deleteEpic(int id);
 
@@ -56,4 +51,8 @@ public interface TaskManager {
     public void deleteSubTask(int id);
 
     public HashMap<Integer, SubTask> getSubTasksOfEpic(int epicId);
+
+    public TimeLine getTimeLine();
+
+    public List<Task> getPrioritizedTasks();
 }

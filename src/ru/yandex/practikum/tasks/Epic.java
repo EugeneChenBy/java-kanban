@@ -1,9 +1,14 @@
 package ru.yandex.practikum.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 public class Epic extends Task {
     private HashSet<Integer> subTasks;
+    private LocalDateTime endTime;
 
     public Epic() {
         super();
@@ -45,8 +50,26 @@ public class Epic extends Task {
     }
 
     @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndDate(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    @Override
     public String toStringShort(String separator) {
-        return String.join(separator, Integer.toString(getId()), Type.EPIC.toString(), getName(), getStatus().toString(), getDescription());
+        String sringStartTime = "";
+        if (startTime != null) {
+            sringStartTime = startTime.format(DATE_TIME_FORMATTER);
+        }
+        String stringDuration = "";
+        if (duration != null) {
+            stringDuration = Long.toString(duration.toMinutes());
+        }
+        return String.join(separator, Integer.toString(getId()), Type.EPIC.toString(), getName(), getStatus().toString(), getDescription(),
+                sringStartTime, stringDuration);
     }
 
     @Override
@@ -55,7 +78,8 @@ public class Epic extends Task {
                 "id=" + this.getId() +
                 ", name='" + this.getName() +
                 "', description='" + this.getDescription() +
-                "', status='" + this.getStatus() +
+                ", " + getStringStartEndDuration() +
+                ", status='" + this.getStatus() +
                 "', subTasks = " + subTasks.toString() +
                 "}";
     }

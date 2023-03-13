@@ -1,5 +1,8 @@
 package ru.yandex.practikum.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class SubTask extends Task {
     private int epicId;
 
@@ -23,6 +26,16 @@ public class SubTask extends Task {
         this.epicId = epicId;
     }
 
+    public SubTask(String name, String description, LocalDateTime startTime, Duration duration, int epicId) {
+        super(name, description, startTime, duration);
+        this.epicId = epicId;
+    }
+
+    public SubTask(int id, String name, String description, LocalDateTime startTime, Duration duration, Status status, int epicId) {
+        super(id, name, description, startTime, duration, status);
+        this.epicId = epicId;
+    }
+
     public int getEpicId() {
         return epicId;
     }
@@ -33,7 +46,16 @@ public class SubTask extends Task {
 
     @Override
     public String toStringShort(String separator) {
-        return String.join(separator, Integer.toString(getId()), Type.SUBTASK.toString(), getName(), getStatus().toString(), getDescription(), Integer.toString(epicId));
+        String stringStartTime = "";
+        if (startTime != null) {
+            stringStartTime = startTime.format(DATE_TIME_FORMATTER);
+        }
+        String stringDuration = "";
+        if (duration != null) {
+            stringDuration = Long.toString(duration.toMinutes());
+        }
+        return String.join(separator, Integer.toString(getId()), Type.SUBTASK.toString(), getName(), getStatus().toString(), getDescription(),
+                stringStartTime, stringDuration, Integer.toString(epicId));
     }
 
     @Override
@@ -42,8 +64,9 @@ public class SubTask extends Task {
                 "id=" + this.getId() +
                 ", name='" + this.getName() +
                 "', description='" + this.getDescription() +
-                "', status='" + this.getStatus() +
+                ", " + getStringStartEndDuration() +
+                ", status='" + this.getStatus() +
                 "', epicId = " + epicId +
-                "'}";
+                "}";
     }
 }

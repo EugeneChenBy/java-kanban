@@ -105,6 +105,11 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     @Override
+    public void removeAll() {
+        history = new CustomLinkedList();
+    }
+
+    @Override
     public String toString() {
         int i = 1;
         String result = null;
