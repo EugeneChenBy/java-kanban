@@ -1,11 +1,12 @@
-package ru.yandex.practikum.kanban;
+package ru.yandex.practikum.tests;
 
 import org.junit.jupiter.api.BeforeEach;
+import ru.yandex.practikum.kanban.InMemoryTaskManager;
+import ru.yandex.practikum.kanban.Managers;
 import ru.yandex.practikum.tasks.Epic;
 import ru.yandex.practikum.tasks.SubTask;
 import ru.yandex.practikum.tasks.Task;
-
-import static org.junit.jupiter.api.Assertions.*;
+import ru.yandex.practikum.tests.TaskManagerTest;
 
 class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     @BeforeEach

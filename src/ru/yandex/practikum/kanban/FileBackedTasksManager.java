@@ -269,7 +269,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
             LocalDateTime task1DateTime = LocalDateTime.parse("01.04.2023 14:00", DATE_TIME_FORMATTER);
             Duration task1Duration = Duration.ofMinutes(60);
-            LocalDateTime task2DateTime = LocalDateTime.parse("15.03.2023 11:30", DATE_TIME_FORMATTER);
+            LocalDateTime task2DateTime = LocalDateTime.parse("19.03.2023 11:30", DATE_TIME_FORMATTER);
             Duration task2Duration = Duration.ofMinutes(45);
 
             Task task1 = new Task("Задача 1", "Описание тестовой задачи 1", task1DateTime, task1Duration);
@@ -297,7 +297,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             Epic epic2 = new Epic("Эпик 2", "Описание тестового эпика 2 без подзадач");
             manager.addEpic(epic2);
 
-            LocalDateTime task3DateTime = LocalDateTime.parse("15.05.2023 11:30", DATE_TIME_FORMATTER);
+            LocalDateTime task3DateTime = LocalDateTime.parse("19.05.2023 11:30", DATE_TIME_FORMATTER);
             Duration task3Duration = null;
 
             Task task3 = new Task("Задача 3", "Описание тестовой задачи 3", task3DateTime, task3Duration);

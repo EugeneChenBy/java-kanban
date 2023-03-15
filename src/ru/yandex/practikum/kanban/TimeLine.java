@@ -2,7 +2,9 @@ package ru.yandex.practikum.kanban;
 
 import ru.yandex.practikum.tasks.Task;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class TimeLine {
@@ -16,7 +18,8 @@ public class TimeLine {
         period = years;
         this.timeUnit = timeUnit;
 
-        LocalDateTime start = truncTimetoUnit(LocalDateTime.now());
+        Clock clock = Clock.systemUTC();
+        LocalDateTime start = truncTimetoUnit(LocalDateTime.now(clock));
         LocalDateTime end = start.plusYears(years).plusMinutes(timeUnit);
 
         int i = 0;
@@ -103,11 +106,11 @@ public class TimeLine {
         return isPossible;
     }
 
-    public void clearTimeLineOfTask(Task task) {
-        if (task.getStartTime() != null) {
-            LocalDateTime startTimeRounded = truncTimetoUnit(task.getStartTime());
-            LocalDateTime endTimeRounded = truncTimetoUnit(task.getEndTime());
-            if (endTimeRounded.isBefore(task.getEndTime())) {
+    public void clearTimeLineOfPeriod(LocalDateTime dateStart, LocalDateTime dateEnd) {
+        if (dateStart != null) {
+            LocalDateTime startTimeRounded = truncTimetoUnit(dateStart);
+            LocalDateTime endTimeRounded = truncTimetoUnit(dateEnd);
+            if (endTimeRounded.isBefore(dateEnd)) {
                 endTimeRounded = endTimeRounded.plusMinutes(timeUnit);
             }
 
@@ -120,15 +123,7 @@ public class TimeLine {
     }
 
     public LocalDateTime truncTimetoUnit (LocalDateTime dateTime) {
-        int minutes = dateTime.getMinute();
-        int start = 0;
-        while (start < 60) {
-            if (minutes < (start + timeUnit)) {
-                break;
-            }
-            start += timeUnit;
-        }
-        return dateTime.withMinute(start).withSecond(0).withNano(0);
+        return dateTime.truncatedTo(ChronoUnit.HOURS).plusMinutes(dateTime.getMinute() / timeUnit * timeUnit);
     }
 
     public HashSet<LocalDateTime> getSetDatesFromPeriod(LocalDateTime startDate, LocalDateTime endDate) {

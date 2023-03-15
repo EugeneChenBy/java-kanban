@@ -1,7 +1,9 @@
-package ru.yandex.practikum.kanban;
+package ru.yandex.practikum.tests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practikum.kanban.FileBackedTasksManager;
+import ru.yandex.practikum.kanban.Managers;
 import ru.yandex.practikum.tasks.Epic;
 import ru.yandex.practikum.tasks.SubTask;
 import ru.yandex.practikum.tasks.Task;
@@ -11,7 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>{
+class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
     @BeforeEach
     public void BeforeEach() {
         manager = new FileBackedTasksManager("newfile.csv");

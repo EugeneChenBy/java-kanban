@@ -1,10 +1,13 @@
-package ru.yandex.practikum.tasks;
+package ru.yandex.practikum.tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practikum.kanban.Managers;
 import ru.yandex.practikum.kanban.TaskManager;
+import ru.yandex.practikum.tasks.Epic;
+import ru.yandex.practikum.tasks.Status;
+import ru.yandex.practikum.tasks.SubTask;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -58,7 +61,7 @@ class EpicTest {
 
     @Test
     public void addNewEpicWithoutSubTasks() {
-        assertEquals(Status.NEW, epic.getStatus(), "Эпик не в статусе NEW");
+        Assertions.assertEquals(Status.NEW, epic.getStatus(), "Эпик не в статусе NEW");
 
         Epic savedEpic = manager.getEpic(epic.getId());
 

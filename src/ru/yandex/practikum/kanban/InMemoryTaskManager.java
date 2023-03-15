@@ -147,7 +147,7 @@ public class InMemoryTaskManager implements TaskManager {
 
         if (oldTask != null) {
             if (timeLine.isPossibleToUpdateTimeTask(oldTask, task)) {
-                timeLine.clearTimeLineOfTask(oldTask);
+                timeLine.clearTimeLineOfPeriod(oldTask.getStartTime(), oldTask.getEndTime());
                 tasks.put(task.getId(), task);
                 sortedTasks.remove(oldTask);
                 sortedTasks.add(task);
@@ -167,7 +167,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (oldSubTask != null) {
             if (epics.containsKey(subTask.getEpicId())) {
                 if (timeLine.isPossibleToUpdateTimeTask(oldSubTask, subTask)) {
-                    timeLine.clearTimeLineOfTask(oldSubTask);
+                    timeLine.clearTimeLineOfPeriod(oldSubTask.getStartTime(), oldSubTask.getEndTime());
                     subTasks.put(subTask.getId(), subTask);
                     sortedTasks.remove(oldSubTask);
                     sortedTasks.add(subTask);
@@ -307,7 +307,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteTasks() {
         for(Task task : tasks.values()) {
             historyManager.remove(task.getId());
-            timeLine.clearTimeLineOfTask(task);
+            timeLine.clearTimeLineOfPeriod(task.getStartTime(), task.getEndTime());
             sortedTasks.remove(task);
         }
         tasks.clear();
@@ -317,7 +317,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteSubTasks() {
         for(SubTask subTask : subTasks.values()) {
             historyManager.remove(subTask.getId());
-            timeLine.clearTimeLineOfTask(subTask);
+            timeLine.clearTimeLineOfPeriod(subTask.getStartTime(), subTask.getEndTime());
             sortedTasks.clear();
         }
         subTasks.clear();
@@ -397,7 +397,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteTask(int id) {
         if (tasks.containsKey(id)) {
             historyManager.remove(id);
-            timeLine.clearTimeLineOfTask(tasks.get(id));
+            timeLine.clearTimeLineOfPeriod(tasks.get(id).getStartTime(), tasks.get(id).getEndTime());
             sortedTasks.remove(tasks.get(id));
             tasks.remove(id);
         } else {
@@ -410,7 +410,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (subTasks.containsKey(id)) {
             int epicId = subTasks.get(id).getEpicId();
             historyManager.remove(id);
-            timeLine.clearTimeLineOfTask(subTasks.get(id));
+            timeLine.clearTimeLineOfPeriod(subTasks.get(id).getStartTime(), subTasks.get(id).getEndTime());
             epics.get(epicId).removeSubTaskFromEpic(id);
             sortedTasks.remove(subTasks.get(id));
             subTasks.remove(id);

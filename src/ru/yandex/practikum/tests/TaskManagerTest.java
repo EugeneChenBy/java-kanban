@@ -1,7 +1,8 @@
-package ru.yandex.practikum.kanban;
+package ru.yandex.practikum.tests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practikum.kanban.TaskManager;
 import ru.yandex.practikum.tasks.Epic;
 import ru.yandex.practikum.tasks.Status;
 import ru.yandex.practikum.tasks.SubTask;
@@ -415,6 +416,17 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
         assertEquals(7,  manager.getAll().size(), "Добавились задачи в уже занятое время");
         assertEquals(busyTimeCount, manager.getTimeLine().getBusyTimeLine().size(), "Количество промежутков времени изменилось");
+    }
+
+    @Test
+    public void shouldAddTasksToReEmptySpace() {
+        manager.addEpic(epic1);
+        manager.addTask(task1);
+        manager.addTask(task2);
+        manager.addEpic(epic2);
+        manager.addSubTask(subTask1);
+        manager.addSubTask(subTask2);
+        manager.addSubTask(subTask3);
 
         manager.deleteTask(task1.getId());
         manager.deleteSubTask(subTask2.getId());
