@@ -1,3 +1,4 @@
+import ru.yandex.practikum.http.HttpTaskServer;
 import ru.yandex.practikum.kanban.*;
 import ru.yandex.practikum.tasks.Epic;
 import ru.yandex.practikum.tasks.SubTask;
@@ -29,7 +30,10 @@ Expected arguments are:
 public class Main {
 
     public static void main(String[] args) {
-        final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        HttpTaskServer server = new HttpTaskServer("newfile.csv");
+
+        server.start();
+/*        final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
         TaskManager manager = Managers.getDefault();
 
@@ -128,7 +132,7 @@ public class Main {
         for (Task task : sortedTask) {
             System.out.println(task);
         }
-
+*/
 /*
         // тестируем просмотр задач
         System.out.println("Печатаем историю просмотра:");

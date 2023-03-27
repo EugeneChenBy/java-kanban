@@ -18,13 +18,17 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     String fileName = null;
     private static final String HEAD = "id,type,name,status,description,timestart,duration,epic";
 
+    public  FileBackedTasksManager() {
+        super();
+    }
+
     public FileBackedTasksManager(String fileName) {
         super();
 
         this.fileName = fileName;
     }
 
-    public void createOrLoad()  throws IOException{
+    public void createOrLoad() throws IOException{
         Path file = null;
 
         if (!Files.exists(Paths.get(fileName))) {
@@ -63,6 +67,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                                 default:
                                     System.out.println("Не определён типа задачи для id = " + item.getId());
                             }
+                            System.out.println(item);
                         }
                     }
                 }
@@ -108,7 +113,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    private void save() {
+    protected void save() {
         try (FileWriter fileWriter = new FileWriter(fileName, Charset.forName("windows-1251"))) {
             fileWriter.write(HEAD + "\n");
 
