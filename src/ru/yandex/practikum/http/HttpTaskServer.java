@@ -1,11 +1,11 @@
 package ru.yandex.practikum.http;
 /*
-Привет, Антон!
-Это техническая сдача ТЗ на проверку, чтоб вписаться в дедлайн.
-Не готов HttpManager (только макет накидал) и не готовы тесты.
-Инсомнией проверил HttpTaskServer и KVServer, через main работу KVTaskClient.
-Долго осознавал, зачем вообще это все, потому не мог эффективно кодировать. Только после последнего Q&A догнал более менее.
-По-хорошему нужно еще пару дней. Дописать HttpTaskManager и целый день или больше на написание тестов
+Привет, Яков!
+Ревью супер, спасибо большое, без преувеличения!
+Все замечания исправил. HttpTaskManager написал и проверил в головном Main-е. Работу в паре с KVServer тоже через Main в пакете http
+Получение в статическом классе менеджера через getDefault пока не сделал, просто задублировал, чтоб тесты не развалились.
+У меня ведь тесты и так в отдельном пакете? Их надо перенести выше прямо в другой пакет не в общих папках?
+Завтра будет день написания тестов, пока посмотри исправления, пожалуйста.
  */
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -37,16 +37,22 @@ public class HttpTaskServer {
     private HttpServer httpServer;
     private TaskManager manager;
 
-    public HttpTaskServer(String fileKanban) {
+    public HttpTaskServer(String url) {
+        this(Managers.getDefault(url));
+    }
+
+    public HttpTaskServer(TaskManager manager) {
+        this.manager = manager;
+
         try {
-            manager = Managers.loadFromFile(fileKanban);
             httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+            httpServer.createContext("/tasks", new TasksHandler());
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Не удалось запустить HTTP-сервер");
-            return;
+            System.out.println("Не удалось создать HTTP-сервер");
+            throw new HttpException("Не удалось запустить http-сервер для обработки запросов к менеджеру канбан-доски");
         }
-        httpServer.createContext("/tasks", new TasksHandler());
+
     }
 
     public void start() {
@@ -70,15 +76,8 @@ public class HttpTaskServer {
         try {
             InputStream inputStream = exchange.getRequestBody();
             String body = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
-/*
-            JsonElement jsonElement = JsonParser.parseString(body);
-            if(!jsonElement.isJsonObject()) {
-                System.out.println("На входе пришёл не JSON");
-                return null;
-            } else {*/
-                System.out.println(body);
-                return body;
-           // }
+
+            return body;
         } catch (IOException e) {
             return null;
         }
@@ -100,7 +99,7 @@ public class HttpTaskServer {
                 } else if (pathParts[2].equals("epic")) {
                     return Endpoint.GET_EPICS;
                 } else {
-                    return Endpoint.UNKNOWN;
+                    return Endpoint.UNKNOWN_ENDPOINT;
                 }
             } else if (pathParts.length == 3 && pathParts[1].equals("tasks") && id > 0) {
                 if (pathParts[2].equals("task")) {
@@ -110,13 +109,12 @@ public class HttpTaskServer {
                 } else if (pathParts[2].equals("epic")) {
                     return Endpoint.GET_EPIC;
                 } else {
-                    return Endpoint.UNKNOWN;
+                    return Endpoint.UNKNOWN_ENDPOINT;
                 }
             } else if (pathParts.length == 4 && requestPath.startsWith("/tasks/subtask/epic/") && id > 0) {
                 return Endpoint.GET_EPIC_SUBTASKS;
             } else {
-                System.out.println("here 3");
-                return Endpoint.UNKNOWN;
+                return Endpoint.UNKNOWN_ENDPOINT;
             }
         } else if (requestMethod.equals("POST")) {
             if (pathParts.length == 3 && pathParts[1].equals("tasks")) {
@@ -127,14 +125,13 @@ public class HttpTaskServer {
                 } else if (pathParts[2].equals("epic")) {
                     return Endpoint.POST_EPIC;
                 } else {
-                    return Endpoint.UNKNOWN;
+                    return Endpoint.UNKNOWN_ENDPOINT;
                 }
             } else {
-                return Endpoint.UNKNOWN;
+                return Endpoint.UNKNOWN_ENDPOINT;
             }
         } else if (requestMethod.equals("DELETE")) {
             if (pathParts.length == 3 && pathParts[1].equals("tasks")) {
-                System.out.println("зашли в удаление " + pathParts[2]);
                 if (pathParts[2].equals("task")) {
                     if (id == 0) {
                         System.out.println("delete_tasks");
@@ -142,34 +139,32 @@ public class HttpTaskServer {
                     } else if (id > 0) {
                         return Endpoint.DELETE_TASK;
                     } else {
-                        return Endpoint.UNKNOWN;
+                        return Endpoint.UNKNOWN_ENDPOINT;
                     }
                 } else if (pathParts[2].equals("subtask")) {
                     if (id == 0) {
-                        System.out.println("delete_subtasks");
                         return Endpoint.DELETE_SUBTASKS;
                     } else if (id > 0) {
                         return Endpoint.DELETE_SUBTASK;
                     } else {
-                        return Endpoint.UNKNOWN;
+                        return Endpoint.UNKNOWN_ENDPOINT;
                     }
                 } else if (pathParts[2].equals("epic")) {
                     if (id == 0) {
-                        System.out.println("delete_epics");
                         return Endpoint.DELETE_EPICS;
                     } else if (id > 0) {
                         return Endpoint.DELETE_EPIC;
                     } else {
-                        return Endpoint.UNKNOWN;
+                        return Endpoint.UNKNOWN_ENDPOINT;
                     }
                 } else {
-                    return Endpoint.UNKNOWN;
+                    return Endpoint.UNKNOWN_ENDPOINT;
                 }
             } else {
-                return Endpoint.UNKNOWN;
+                return Endpoint.UNKNOWN_ENDPOINT;
             }
         } else {
-            return Endpoint.UNKNOWN;
+            return Endpoint.UNKNOWN_METHOD;
         }
     }
 
@@ -252,7 +247,7 @@ public class HttpTaskServer {
                         break;
                     case POST_TASK:
                         json = getBody(httpExchange);
-                        if (json == null) {
+                        if (json == null || json.isEmpty()) {
                             writeResponse(httpExchange, "{\"result\":\"неверный запрос\"}", 400);
                         } else {
                             task = gson.fromJson(json, Task.class);
@@ -267,7 +262,7 @@ public class HttpTaskServer {
                         break;
                     case POST_SUBTASK:
                         json = getBody(httpExchange);
-                        if (json == null) {
+                        if (json == null || json.isEmpty()) {
                             writeResponse(httpExchange, "{\"result\":\"неверный запрос\"}", 400);
                         } else {
                             SubTask subTask = gson.fromJson(json, SubTask.class);
@@ -283,7 +278,7 @@ public class HttpTaskServer {
                         break;
                     case POST_EPIC:
                         json = getBody(httpExchange);
-                        if (json == null) {
+                        if (json == null || json.isEmpty()) {
                             writeResponse(httpExchange, "{\"result\":\"неверный запрос\"}", 400);
                         } else {
                             Epic epic = gson.fromJson(json, Epic.class);
@@ -338,8 +333,11 @@ public class HttpTaskServer {
                             writeResponse(httpExchange, "{\"result\":\"эпик " + id + " не найден\"}", 404);
                         }
                         break;
-                    case UNKNOWN:
-                        writeResponse(httpExchange, "{\"result\":\"неверный запрос\"}", 400);
+                    case UNKNOWN_METHOD:
+                        writeResponse(httpExchange, "{\"result\":\"недопустимый метод\"}", 405);
+                        System.out.println(manager);
+                    case UNKNOWN_ENDPOINT:
+                        writeResponse(httpExchange, "{\"result\":\"неизвестный запрос\"}", 404);
                         System.out.println(manager);
                 }
             } catch (Exception e) {
@@ -370,5 +368,5 @@ public class HttpTaskServer {
         POST_TASK, POST_SUBTASK, POST_EPIC,
         DELETE_TASKS, DELETE_SUBTASKS, DELETE_EPICS,
         DELETE_TASK, DELETE_SUBTASK, DELETE_EPIC,
-        UNKNOWN};
+        UNKNOWN_METHOD, UNKNOWN_ENDPOINT};
 }

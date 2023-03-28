@@ -1,3 +1,4 @@
+import ru.yandex.practikum.http.HttpTaskManager;
 import ru.yandex.practikum.http.HttpTaskServer;
 import ru.yandex.practikum.kanban.*;
 import ru.yandex.practikum.tasks.Epic;
@@ -30,10 +31,70 @@ Expected arguments are:
 public class Main {
 
     public static void main(String[] args) {
-        HttpTaskServer server = new HttpTaskServer("newfile.csv");
+        HttpTaskManager manager = new HttpTaskManager("http://localhost:8078/");
+
+        final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+        LocalDateTime task1DateTime = LocalDateTime.parse("01.04.2023 14:00", DATETIME_FORMATTER);
+        Duration task1Duration = Duration.ofMinutes(60);
+        LocalDateTime task2DateTime = LocalDateTime.parse("15.04.2023 11:30", DATETIME_FORMATTER);
+        Duration task2Duration = Duration.ofMinutes(45);
+
+        Task task1 = new Task("Задача 1", "Описание тестовой задачи 1", task1DateTime, task1Duration);
+        Task task2 = new Task("Задача 2", "Описание тестовой задачи 2", task2DateTime, task2Duration);
+        manager.addTask(task1);
+        manager.addTask(task2);
+
+        Epic epic1 = new Epic("Эпик 1", "Описание тестового эпика 1 с 3-мя подзадачами");
+        manager.addEpic(epic1);
+
+        LocalDateTime subTask1DateTime = LocalDateTime.parse("01.04.2023 16:15", DATETIME_FORMATTER);
+        Duration subTask1Duration = Duration.ofMinutes(35);
+        LocalDateTime subTask2DateTime = LocalDateTime.parse("29.04.2023 22:00", DATETIME_FORMATTER);
+        Duration subTask2Duration = Duration.ofMinutes(70);
+        LocalDateTime subTask3DateTime = LocalDateTime.parse("23.04.2023 00:30", DATETIME_FORMATTER);
+        Duration subTask3Duration = Duration.ofMinutes(120);
+
+        SubTask subTask1 = new SubTask("Подзадача 1", "Описание тестовой подзадачи 1 эпика 1", subTask1DateTime, subTask1Duration, epic1.getId());
+        SubTask subTask2 = new SubTask("Подзадача 2", "Описание тестовой подзадачи 2 эпика 1", subTask2DateTime, subTask2Duration, epic1.getId());
+        SubTask subTask3 = new SubTask("Подзадача 3", "Описание тестовой подзадачи 3 эпика 1", subTask3DateTime, subTask3Duration, epic1.getId());
+        manager.addSubTask(subTask1);
+        manager.addSubTask(subTask2);
+        manager.addSubTask(subTask3);
+
+        Epic epic2 = new Epic("Эпик 2", "Описание тестового эпика 2 без подзадач");
+        manager.addEpic(epic2);
+
+        LocalDateTime task3DateTime = LocalDateTime.parse("15.05.2023 11:30", DATETIME_FORMATTER);
+        Duration task3Duration = null;
+
+        Task task3 = new Task("Задача 3", "Описание тестовой задачи 3", task3DateTime, task3Duration);
+        Task task4 = new Task("Задача 4", "Описание тестовой задачи 4");
+        manager.addTask(task3);
+        manager.addTask(task4);
+
+        LocalDateTime subTask4DateTime = null;
+        Duration subTask4Duration = Duration.ofMinutes(120);
+        SubTask subTask4 = new SubTask("Подзадача 4", "Описание тестовой подзадачи 4 эпика 2", subTask4DateTime, subTask4Duration, epic2.getId());
+        manager.addSubTask(subTask4);
+
+        System.out.println(manager);
+
+        manager.getTask(task2.getId());
+        manager.getSubTask(subTask3.getId());
+        manager.getTask(task1.getId());
+        manager.getSubTask(subTask2.getId());
+        manager.getEpic(epic2.getId());
+        manager.getEpic(epic1.getId());
+        manager.getSubTask(subTask1.getId());
+        manager.getEpic(epic1.getId());
+
+        HttpTaskManager loadedKV = new HttpTaskManager("http://localhost:8078/", true);
+        System.out.println(loadedKV);
+/*        HttpTaskServer server = new HttpTaskServer("newfile.csv");
 
         server.start();
-/*        final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
         TaskManager manager = Managers.getDefault();
 

@@ -7,16 +7,19 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class KVTaskClient {
-    private String api_token = null;
+    private String apiToken = null;
     private final String URL;
-    private HttpClient client;
-
+    private final HttpClient client;
 
     public KVTaskClient(String URL) {
         this.URL = URL;
 
         client = HttpClient.newHttpClient();
 
+        register();
+    }
+
+    private void register() {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder();
 
         URI urlRegister = URI.create(URL + "register");
@@ -33,21 +36,23 @@ public class KVTaskClient {
         try {
             HttpResponse<String> response = client.send(request, handler);
             if (response.statusCode() == 200) {
-                api_token = response.body();
+                apiToken = response.body();
+                System.out.println(apiToken);
             } else {
                 System.out.println("Что-то пошло не так. Сервер вернул код состояния: " + response.statusCode());
+                throw new HttpException("Ошибка регистрации на KV-сервере");
             }
         } catch (IOException | InterruptedException e) { // обрабатываем ошибки отправки запроса
             System.out.println("Во время выполнения запроса возникла ошибка.\n" +
                     "Проверьте, пожалуйста, адрес и повторите попытку.");
+            throw new HttpException("Ошибка регистрации на KV-сервере");
         }
-
     }
 
     public void put(String key, String json) {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder();
 
-        URI urlSave = URI.create(URL + "save/" + key + "?API_TOKEN=" + api_token);
+        URI urlSave = URI.create(URL + "save/" + key + "?API_TOKEN=" + apiToken);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
@@ -56,18 +61,20 @@ public class KVTaskClient {
                 .header("Accept", "text/html")
                 .build();
 
-        HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
+        HttpResponse.BodyHandler<Void> handler = HttpResponse.BodyHandlers.discarding();
 
         try {
-            HttpResponse<String> response = client.send(request, handler);
+            HttpResponse<Void> response = client.send(request, handler);
             if (response.statusCode() == 200) {
                 System.out.println("Значение успешно сохранено");
             } else {
                 System.out.println("Что-то пошло не так. Сервер вернул код состояния: " + response.statusCode());
+                throw new HttpException("Ошибка сохранения данных на KV-сервере");
             }
         } catch (IOException | InterruptedException e) { // обрабатываем ошибки отправки запроса
             System.out.println("Во время выполнения запроса возникла ошибка.\n" +
                     "Проверьте, пожалуйста, адрес и повторите попытку.");
+            throw new HttpException("Ошибка сохранения данных на KV-сервере");
         }
     }
     public String load(String key) {
@@ -75,7 +82,7 @@ public class KVTaskClient {
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder();
 
-        URI urlSave = URI.create(URL + "load/" + key + "?API_TOKEN=" + api_token);
+        URI urlSave = URI.create(URL + "load/" + key + "?API_TOKEN=" + apiToken);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
@@ -93,10 +100,12 @@ public class KVTaskClient {
                 keyValue = response.body();
             } else {
                 System.out.println("Что-то пошло не так. Сервер вернул код состояния: " + response.statusCode());
+                throw new HttpException("Ошибка получения данных с KV-сервера");
             }
         } catch (IOException | InterruptedException e) { // обрабатываем ошибки отправки запроса
             System.out.println("Во время выполнения запроса возникла ошибка.\n" +
                     "Проверьте, пожалуйста, адрес и повторите попытку.");
+            throw new HttpException("Ошибка получения данных с KV-сервера");
         }
 
         return keyValue;

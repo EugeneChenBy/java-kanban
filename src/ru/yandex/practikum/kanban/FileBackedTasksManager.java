@@ -28,7 +28,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         this.fileName = fileName;
     }
 
-    public void createOrLoad() throws IOException{
+    public void load() throws IOException{
         Path file = null;
 
         if (!Files.exists(Paths.get(fileName))) {
@@ -134,7 +134,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    private static String historyToString(HistoryManager manager) {
+    protected static String historyToString(HistoryManager manager) {
         List<Task> list = manager.getHistory();
 
         String history = list.stream()
@@ -146,7 +146,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     }
 
-    private static List<Integer> historyFromString(String value) {
+    protected static List<Integer> historyFromString(String value) {
         String[] historyIdStr = value.split(",");
 
         List<Integer> historyId = new ArrayList<>();
