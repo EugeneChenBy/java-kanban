@@ -1,4 +1,4 @@
-package ru.yandex.practikum.tests;
+package tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,9 +29,9 @@ class EpicTest {
     LocalDateTime subTask2DateTime;
 
     void add3NewSubTasksToEpic() {
-        subTask1DateTime = LocalDateTime.parse("01.04.2023 16:15", DATETIME_FORMATTER);
+        subTask1DateTime = LocalDateTime.parse("01.05.2023 16:15", DATETIME_FORMATTER);
         Duration subTask1Duration = Duration.ofMinutes(35);
-        subTask2DateTime = LocalDateTime.parse("29.03.2023 22:00", DATETIME_FORMATTER);
+        subTask2DateTime = LocalDateTime.parse("29.04.2023 22:00", DATETIME_FORMATTER);
         Duration subTask2Duration = Duration.ofMinutes(70);
 
         subTask1 = new SubTask("Подзадача 1", "Описание тестовой подзадачи 1 эпика 1", subTask1DateTime, subTask1Duration, epic.getId());
@@ -69,7 +70,7 @@ class EpicTest {
 
         assertEquals(epic, savedEpic, "Эпики не совпадают.");
 
-        final HashMap<Integer, Epic> epics = manager.getEpics();
+        final Map<Integer, Epic> epics = manager.getEpics();
 
         assertNotNull(epics, "Эпики на возвращаются.");
         assertEquals(1, epics.size(), "Неверное количество эпиков.");
@@ -103,7 +104,7 @@ class EpicTest {
         assertEquals(Status.NEW, epic.getStatus(), "Эпик с новыми подзадачами должен быть в статусе NEW");
 
         assertEquals(subTask2DateTime, epic.getStartTime(), "Неверно рассчитано время начала исполнения эпика");
-        assertEquals(LocalDateTime.of(2023, 04, 01, 16, 50, 0), epic.getEndTime(), "Неверно рассчитано время окончания исполнения эпика");
+        assertEquals(LocalDateTime.of(2023, 05, 01, 16, 50, 0), epic.getEndTime(), "Неверно рассчитано время окончания исполнения эпика");
         assertEquals(Duration.ofMinutes(105), epic.getDuration(), "Неверно рассчитана продолжительность исполнения эпика");
     }
 

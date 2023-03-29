@@ -20,17 +20,15 @@ public class KVTaskClient {
     }
 
     private void register() {
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder();
-
         URI urlRegister = URI.create(URL + "register");
-        System.out.println(urlRegister.toString());
+
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
                 .uri(urlRegister)
                 .version(HttpClient.Version.HTTP_1_1)
                 .header("Accept", "text/html")
                 .build();
-        System.out.println(request.toString());
+
         HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
 
         try {
@@ -50,8 +48,6 @@ public class KVTaskClient {
     }
 
     public void put(String key, String json) {
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder();
-
         URI urlSave = URI.create(URL + "save/" + key + "?API_TOKEN=" + apiToken);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -78,10 +74,6 @@ public class KVTaskClient {
         }
     }
     public String load(String key) {
-        String keyValue = null;
-
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder();
-
         URI urlSave = URI.create(URL + "load/" + key + "?API_TOKEN=" + apiToken);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -97,7 +89,7 @@ public class KVTaskClient {
             HttpResponse<String> response = client.send(request, handler);
             if (response.statusCode() == 200) {
                 System.out.println("Значение успешно получено");
-                keyValue = response.body();
+                return response.body();
             } else {
                 System.out.println("Что-то пошло не так. Сервер вернул код состояния: " + response.statusCode());
                 throw new HttpException("Ошибка получения данных с KV-сервера");
@@ -107,7 +99,5 @@ public class KVTaskClient {
                     "Проверьте, пожалуйста, адрес и повторите попытку.");
             throw new HttpException("Ошибка получения данных с KV-сервера");
         }
-
-        return keyValue;
     }
 }

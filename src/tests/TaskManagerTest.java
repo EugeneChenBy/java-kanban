@@ -1,4 +1,4 @@
-package ru.yandex.practikum.tests;
+package tests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,11 +28,11 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     protected static SubTask subTask3;
     protected static SubTask subTask4;
 
-    protected LocalDateTime subTask1DateTime = LocalDateTime.parse("01.04.2023 16:15", DATETIME_FORMATTER);
-    protected LocalDateTime subTask2DateTime = LocalDateTime.parse("29.03.2023 22:00", DATETIME_FORMATTER);
-    protected LocalDateTime subTask4DateTime = LocalDateTime.parse("29.03.2023 23:00", DATETIME_FORMATTER);
-    protected LocalDateTime task1DateTime = LocalDateTime.parse("17.03.2023 10:10", DATETIME_FORMATTER);
-    protected LocalDateTime task3DateTime = LocalDateTime.parse("17.03.2023 09:00", DATETIME_FORMATTER);
+    protected LocalDateTime subTask1DateTime = LocalDateTime.parse("01.05.2023 16:15", DATETIME_FORMATTER);
+    protected LocalDateTime subTask2DateTime = LocalDateTime.parse("29.04.2023 22:00", DATETIME_FORMATTER);
+    protected LocalDateTime subTask4DateTime = LocalDateTime.parse("29.04.2023 23:00", DATETIME_FORMATTER);
+    protected LocalDateTime task1DateTime = LocalDateTime.parse("17.04.2023 10:10", DATETIME_FORMATTER);
+    protected LocalDateTime task3DateTime = LocalDateTime.parse("17.04.2023 09:00", DATETIME_FORMATTER);
     protected Duration subTask1Duration = Duration.ofMinutes(35);
     protected Duration subTask2Duration = Duration.ofMinutes(70);
     protected Duration subTask4Duration = Duration.ofMinutes(45);
@@ -345,18 +345,18 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
         assertNotNull(busyDateTime, "Не заполнено занятое под задачи время");
 
-        if (busyDateTime.contains(LocalDateTime.parse("01.04.2023 16:15", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("01.04.2023 16:30", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("01.04.2023 16:45", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("29.03.2023 22:00", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("29.03.2023 22:15", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("29.03.2023 22:30", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("29.03.2023 22:45", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("29.03.2023 23:00", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("17.03.2023 10:00", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("17.03.2023 10:15", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("17.03.2023 10:30", DATETIME_FORMATTER))
-                && busyDateTime.contains(LocalDateTime.parse("17.03.2023 10:45", DATETIME_FORMATTER))
+        if (busyDateTime.contains(LocalDateTime.parse("01.05.2023 16:15", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("01.05.2023 16:30", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("01.05.2023 16:45", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("29.04.2023 22:00", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("29.04.2023 22:15", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("29.04.2023 22:30", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("29.04.2023 22:45", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("29.04.2023 23:00", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("17.04.2023 10:00", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("17.04.2023 10:15", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("17.04.2023 10:30", DATETIME_FORMATTER))
+                && busyDateTime.contains(LocalDateTime.parse("17.04.2023 10:45", DATETIME_FORMATTER))
                 && busyDateTime.size() == 12) {
             filledCorrectly = true;
         }

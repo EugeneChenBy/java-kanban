@@ -9,25 +9,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-/*
-13.03.2023
-Привет, Антон!
-Проверку возможности добавления сделал через массив времени.
-Под расчёт статуса Эпика сделал отдельный класс
-HistoryManager тестируют внутри TaskManager-а
 
-Скажи, пожалуйста, как мне исправить ошибку запуска тестов с покрытием кода?
-
-"C:\Program Files\Amazon Corretto\jdk11.0.17_8\bin\java.exe" -ea -javaagent:C:\Users\ВТБ\AppData\Local\JetBrains\IdeaIC2022.2\testAgent\intellij-coverage-agent-1.0.673.jar=C:\Users\ВТБ\AppData\Local\Temp\coverage2args -Didea.new.sampling.coverage=true -Dcoverage.ignore.private.constructor.util.class=true -Didea.test.cyclic.buffer.size=1048576 "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.3\lib\idea_rt.jar=58818:C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.3\bin" -Dfile.encoding=UTF-8 -classpath "C:\Users\ВТБ\.m2\repository\org\junit\platform\junit-platform-launcher\1.8.1\junit-platform-launcher-1.8.1.jar;C:\Users\ВТБ\.m2\repository\org\junit\platform\junit-platform-engine\1.8.1\junit-platform-engine-1.8.1.jar;C:\Users\ВТБ\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\ВТБ\.m2\repository\org\junit\platform\junit-platform-commons\1.8.1\junit-platform-commons-1.8.1.jar;C:\Users\ВТБ\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.3\lib\idea_rt.jar;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.3\plugins\junit\lib\junit5-rt.jar;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.3\plugins\junit\lib\junit-rt.jar;C:\Users\ВТБ\dev\java-kanban\out\test\java-kanban;C:\Users\ВТБ\dev\java-kanban\out\production\java-kanban;C:\Users\ВТБ\dev\java-kanban\lib\junit-jupiter-5.8.1.jar;C:\Users\ВТБ\dev\java-kanban\lib\junit-jupiter-api-5.8.1.jar;C:\Users\ВТБ\dev\java-kanban\lib\opentest4j-1.2.0.jar;C:\Users\ВТБ\dev\java-kanban\lib\junit-platform-commons-1.8.1.jar;C:\Users\ВТБ\dev\java-kanban\lib\apiguardian-api-1.1.2.jar;C:\Users\ВТБ\dev\java-kanban\lib\junit-jupiter-params-5.8.1.jar;C:\Users\ВТБ\dev\java-kanban\lib\junit-jupiter-engine-5.8.1.jar;C:\Users\ВТБ\dev\java-kanban\lib\junit-platform-engine-1.8.1.jar" com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit5 @w@C:\Users\ВТБ\AppData\Local\Temp\idea_working_dirs_junit.tmp @C:\Users\ВТБ\AppData\Local\Temp\idea_junit.tmp -socket58817
-At least 5 arguments expected but 1 found.
-'C:\Users\ÂÒÁ\AppData\Local\Temp\coverage2args'
-Expected arguments are:
-1) data file to save coverage result
-2) a flag to enable tracking per test coverage
-3) a flag to calculate coverage for unloaded classes
-4) a flag to use data file as initial coverage, also use it if several parallel processes are to write into one file
-5) a flag to run coverage in sampling mode or in tracing mode otherwise
- */
 public class Main {
 
     public static void main(String[] args) {

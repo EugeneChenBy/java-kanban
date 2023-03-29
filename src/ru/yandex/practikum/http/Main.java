@@ -6,7 +6,8 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        new KVServer().start();
+        KVServer server = new KVServer();
+        server.start();
 
         KVTaskClient client = new KVTaskClient("http://localhost:8078/");
 
@@ -28,6 +29,9 @@ public class Main {
                 System.out.println("Введите ключ");
                 String key = scanner.nextLine();
                 System.out.println(client.load(key));
+            } else if (userInput == 0) {
+                server.stop(2);
+                break;
             } else {
                 System.out.println("Введена неизвестная команда! Повторите ввод!");
             }
@@ -40,5 +44,6 @@ public class Main {
         System.out.println("Выберите, что вы хотите сделать");
         System.out.println("1 - Записать значение");
         System.out.println("2 - Считать значение");
+        System.out.println("0 - Выключить сервер");
     }
 }

@@ -2,17 +2,17 @@ package ru.yandex.practikum.kanban;
 
 import ru.yandex.practikum.tasks.*;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface TaskManager {
     public HistoryManager getHistoryManager();
 
-    public HashMap<Integer, Epic> getEpics();
+    public Map<Integer, Epic> getEpics();
 
-    public HashMap<Integer, Task> getTasks();
+    public Map<Integer, Task> getTasks();
 
-    public HashMap<Integer, SubTask> getSubTasks();
+    public Map<Integer, SubTask> getSubTasks();
 
     public void addEpic(Epic epic);
 
@@ -28,7 +28,7 @@ public interface TaskManager {
     public void updateSubTask(SubTask subTask);
 
     // получение всех сущностей Канбан-доски
-    public HashMap<Integer, Task> getAll();
+    public Map<Integer, Task> getAll();
 
     public void deleteAll();
 
@@ -50,7 +50,7 @@ public interface TaskManager {
 
     public void deleteSubTask(int id);
 
-    public HashMap<Integer, SubTask> getSubTasksOfEpic(int epicId);
+    public Map<Integer, SubTask> getSubTasksOfEpic(int epicId);
 
     public TimeLine getTimeLine();
 

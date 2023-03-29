@@ -28,7 +28,6 @@ public class KVServer {
 	}
 
 	private void load(HttpExchange h) throws IOException {
-		// TODO Добавьте получение значения по ключу
 		try {
 			System.out.println("\n/load");
 			if (!hasAuth(h)) {
@@ -45,7 +44,7 @@ public class KVServer {
 				}
 				if (!data.containsKey(key) || data.get(key).length() == 0) {
 					System.out.println("Данные для этого ключа не найдены");
-					h.sendResponseHeaders(400, 0);
+					sendText(h, "");
 					return;
 				}
 				sendText(h, data.get(key));
@@ -111,6 +110,11 @@ public class KVServer {
 		System.out.println("Открой в браузере http://localhost:" + PORT + "/");
 		System.out.println("API_TOKEN: " + apiToken);
 		server.start();
+	}
+
+	public void stop(int delay) {
+		System.out.println("Выключаем сервер на порту " + PORT);
+		server.stop(delay);
 	}
 
 	private String generateApiToken() {

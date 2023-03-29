@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
@@ -46,8 +47,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                             line = br.readLine();
                             if (line != null) {
                                 List<Integer> historyList = historyFromString(line);
-                                HistoryManager historyManager = getHistoryManager();
-                                HashMap<Integer, Task> listAllTasks = getAll();
+                                Map<Integer, Task> listAllTasks = getAll();
                                 for (Integer id : historyList) {
                                     historyManager.add(listAllTasks.get(id));
                                 }
@@ -123,7 +123,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
             fileWriter.write("\n");
 
-            HistoryManager historyManager = getHistoryManager();
             if (historyManager.getHistory().size() > 0) {
                 fileWriter.write(historyToString(historyManager));
             }
@@ -270,7 +269,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             System.out.println("Менеджер после загрузки файла");
             System.out.println(manager);
             System.out.println("Загруженная история");
-            System.out.println(manager.getHistoryManager());
+            System.out.println(manager.historyManager);
 
             LocalDateTime task1DateTime = LocalDateTime.parse("01.04.2023 14:00", DATE_TIME_FORMATTER);
             Duration task1Duration = Duration.ofMinutes(60);
@@ -329,18 +328,18 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             manager.getEpic(3);
             manager.getSubTask(5);
             manager.getTask(1);
-            System.out.println(manager.getHistoryManager());
+            System.out.println(manager.historyManager);
 
             System.out.println("Еще 3 просмотра:");
             manager.getTask(2);
             manager.getSubTask(6);
             manager.getSubTask(5);
-            System.out.println(manager.getHistoryManager());
+            System.out.println(manager.historyManager);
             /*
             System.out.println("Удаляем задачи 2 и 6:");
             manager.deleteTask(2);
             manager.deleteSubTask(6);
-            System.out.println(manager.getHistoryManager());
+            System.out.println(manager.historyManager);
 
             System.out.println("Удаляем эпик 3:");
             manager.deleteEpic(3);
@@ -348,7 +347,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             System.out.println("Запрашиваем новые созданные во второй итерации задачи 9 и 12:");
             manager.getTask(9);
             manager.getSubTask(12);
-            System.out.println(manager.getHistoryManager());
+            System.out.println(manager.historyManager);
 */
 
         } catch (IOException e) {

@@ -8,7 +8,7 @@ public class Managers {
     public static InMemoryTaskManager getDefault() {
         return new InMemoryTaskManager();
     }
-    public static TaskManager getDefault(String url) {
+    public static HttpTaskManager getDefault(String url) {
         return new HttpTaskManager(url, true);
     }
     public static HistoryManager getDefaultHistory() {

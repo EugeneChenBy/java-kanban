@@ -12,13 +12,13 @@ public class InMemoryTaskManager implements TaskManager {
     private final LocalDateTime MAX_DATE_TIME = LocalDateTime.of(3000, 1, 1, 0, 0);
     public static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private int id;
-    private HashMap<Integer, Epic> epics;
-    private HashMap<Integer, Task> tasks;
-    private HashMap<Integer, SubTask> subTasks;
-    private TreeSet<Task> sortedTasks;
-    private TimeLine timeLine;
+    protected Map<Integer, Epic> epics;
+    protected Map<Integer, Task> tasks;
+    protected Map<Integer, SubTask> subTasks;
+    protected TreeSet<Task> sortedTasks;
+    protected TimeLine timeLine;
 
-    private HistoryManager historyManager;
+    protected HistoryManager historyManager;
 
     public InMemoryTaskManager() {
         this.id = 0;
@@ -47,23 +47,27 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public HashMap<Integer, Epic> getEpics() {
+    public Map<Integer, Epic> getEpics() {
         return epics;
     }
 
     @Override
-    public HashMap<Integer, Task> getTasks() {
+    public Map<Integer, Task> getTasks() {
         return tasks;
     }
 
     @Override
-    public HashMap<Integer, SubTask> getSubTasks() {
+    public Map<Integer, SubTask> getSubTasks() {
         return subTasks;
     }
 
     private int getNewId() {
         id++;
         return id;
+    }
+
+    protected void setNewId(int id) {
+        this.id = id;
     }
 
     @Override
@@ -276,8 +280,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     // получение всех сущностей Канбан-доски
     @Override
-    public HashMap<Integer, Task> getAll() {
-        HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
+    public Map<Integer, Task> getAll() {
+        Map<Integer, Task> allTasks = new HashMap<Integer, Task>();
 
         for (Epic epic : epics.values()) {
             allTasks.put(epic.getId(), epic);
@@ -421,9 +425,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public HashMap<Integer, SubTask> getSubTasksOfEpic(int epicId) {
+    public Map<Integer, SubTask> getSubTasksOfEpic(int epicId) {
         if (epics.containsKey(epicId)) {
-            HashMap<Integer, SubTask> epicSubTasks = new HashMap<>();
+            Map<Integer, SubTask> epicSubTasks = new HashMap<>();
 
             for (Integer idSubTask : epics.get(epicId).getSubTasks()) {
                 if (subTasks.containsKey(idSubTask)) {

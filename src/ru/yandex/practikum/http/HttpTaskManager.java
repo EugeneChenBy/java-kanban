@@ -9,10 +9,9 @@ import com.google.gson.Gson;
 import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HttpTaskManager extends FileBackedTasksManager {
 
@@ -35,49 +34,57 @@ public class HttpTaskManager extends FileBackedTasksManager {
         client = new KVTaskClient(serverUrl);
 
         if (toLoad) {
-            try {
-                load();
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new HttpException("Ошибка загрузки данных с KV-сервера");
-            }
+            load();
         }
     }
 
     @Override
-    public void load() throws IOException {
+    public void load() {
         String tasks = client.load("TASKS");
         String subTasks = client.load("SUBTASKS");
-        String epics = client.load("EPICS");
+        String epics = client.load("EPICS");;
         String history = client.load("HISTORY");
 
-        Type listTaskType = new TypeToken<List<Task>>(){}.getType();
-        Type listSubTaskType = new TypeToken<List<SubTask>>(){}.getType();
-        Type listEpicType = new TypeToken<List<Epic>>(){}.getType();
-
-        List<Task> taskList = gson.fromJson(tasks, listTaskType);
-        List<SubTask> subTaskList = gson.fromJson(subTasks, listSubTaskType);
-        List<Epic> epicList = gson.fromJson(epics, listEpicType);
-
-        // для Якова - айдишники (генератор) у меня обновляются в InMemoryTaskManager при записи "задачи" с имеющимся айдишником
-        for (Task task : taskList) {
-            addTask(task);
-        }
-        for (Epic epic : epicList) {
-            epic.removeSubTasksFromEpic(); // дальше записанные подзадачи мешают при загрузке подзадач
-            addEpic(epic);
-        }
-        for (SubTask subTask : subTaskList) {
-            addSubTask(subTask);
+        if (!tasks.isEmpty()) {
+            Type listTaskType = new TypeToken<List<Task>>(){}.getType();
+            List<Task> taskList = gson.fromJson(tasks, listTaskType);
+            for (Task task : taskList) {
+                this.tasks.put(task.getId(), task);
+                this.sortedTasks.add(task);
+                this.timeLine.addTaskToTimeLine(task);
+            }
         }
 
-        List<Integer> historyList = historyFromString(history);
-        HistoryManager historyManager = getHistoryManager();
-        HashMap<Integer, Task> listAllTasks = getAll();
-        for (Integer id : historyList) {
-            historyManager.add(listAllTasks.get(id));
+        if (!epics.isEmpty()) {
+            Type listEpicType = new TypeToken<List<Epic>>(){}.getType();
+            List<Epic> epicList = gson.fromJson(epics, listEpicType);
+            for (Epic epic : epicList) {
+                this.epics.put(epic.getId(), epic);
+            }
         }
 
+        if (!subTasks.isEmpty()) {
+            Type listSubTaskType = new TypeToken<List<SubTask>>(){}.getType();
+            List<SubTask> subTaskList = gson.fromJson(subTasks, listSubTaskType);
+            for (SubTask subTask : subTaskList) {
+                this.subTasks.put(subTask.getId(),subTask);
+                this.sortedTasks.add(subTask);
+                this.timeLine.addTaskToTimeLine(subTask);
+            }
+        }
+
+        List<Integer> allList = new ArrayList<>(getAll().keySet());
+        if (allList.size() > 0) {
+            int maxId = allList.stream().max(Integer::compare).get();
+            setNewId(maxId);
+
+            List<Integer> historyList = historyFromString(history);
+            HistoryManager historyManager = getHistoryManager();
+            Map<Integer, Task> listAllTasks = getAll();
+            for (Integer id : historyList) {
+                historyManager.add(listAllTasks.get(id));
+            }
+        }
     }
 
     @Override
