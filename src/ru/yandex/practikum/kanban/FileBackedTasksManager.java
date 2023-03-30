@@ -67,7 +67,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                                 default:
                                     System.out.println("Не определён типа задачи для id = " + item.getId());
                             }
-                            System.out.println(item);
                         }
                     }
                 }

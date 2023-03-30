@@ -57,8 +57,8 @@ public class HttpTaskServer {
         httpServer.start();
     }
 
-    public void stop() {
-        httpServer.stop(2);
+    public void stop(int delay) {
+        httpServer.stop(delay);
     }
 
     private static Optional<Integer> getId(String rawQuery) {
@@ -136,7 +136,6 @@ public class HttpTaskServer {
             if (pathParts.length == 3 && pathParts[1].equals("tasks")) {
                 if (pathParts[2].equals("task")) {
                     if (id == 0) {
-                        System.out.println("delete_tasks");
                         return Endpoint.DELETE_TASKS;
                     } else if (id > 0) {
                         return Endpoint.DELETE_TASK;
@@ -185,19 +184,15 @@ public class HttpTaskServer {
             String method = httpExchange.getRequestMethod();
             String path = httpExchange.getRequestURI().getPath();
 
-            System.out.println("Началась обработка /tasks запроса от клиента  " + LocalDateTime.now() + method +  path);
+            System.out.println("Началась обработка /tasks запроса от клиента  " + LocalDateTime.now() + method + path);
 
             Optional<Integer> optId = getId(httpExchange.getRequestURI().getRawQuery());
 
             int id = optId.orElse(0);
-            System.out.println("id = " + id);
+
             Gson gson = new Gson();
 
             Endpoint endpoint = getEndpoint(path, method, id);
-
-            System.out.println(endpoint);
-
-            String response;
 
             String json;
 
@@ -239,7 +234,7 @@ public class HttpTaskServer {
                         }
                         break;
                     case GET_EPIC_SUBTASKS:
-                        writeResponse(httpExchange, gson.toJson(new ArrayList<SubTask>(manager.getSubTasksOfEpic(id).values())), 200);
+                        writeResponse(httpExchange, gson.toJson(manager.getSubTasksOfEpic(id)), 200);
                         break;
                     case GET_PRIOR_TASKS:
                         writeResponse(httpExchange, gson.toJson(manager.getPrioritizedTasks()), 200);
@@ -268,7 +263,6 @@ public class HttpTaskServer {
                             writeResponse(httpExchange, "{\"result\":\"неверный запрос\"}", 400);
                         } else {
                             SubTask subTask = gson.fromJson(json, SubTask.class);
-                            System.out.println("adadsad");
                             if (subTask.getId() == 0) {
                                 manager.addSubTask(subTask);
                                 writeResponse(httpExchange, "{\"result\":\"подзадача добавлена\"},{\"id\":" + subTask.getId() + "}", 200);
@@ -337,10 +331,8 @@ public class HttpTaskServer {
                         break;
                     case UNKNOWN_METHOD:
                         writeResponse(httpExchange, "{\"result\":\"недопустимый метод\"}", 405);
-                        System.out.println(manager);
                     case UNKNOWN_ENDPOINT:
                         writeResponse(httpExchange, "{\"result\":\"неизвестный запрос\"}", 404);
-                        System.out.println(manager);
                 }
             } catch (Exception e) {
                 writeResponse(httpExchange, e.toString(), 500);
